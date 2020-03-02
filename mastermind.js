@@ -49,9 +49,11 @@ function compare() { //compare the solution & guess arrays, lock any matches
             data.correctguess++;
             data.lock[i] = 1; //lock the number as solution is correct - will prevent generating more numbers until cleared
             _lockcount++; //if lockcount == data.solutionlength at the end of the method, it means all numbers have been solved
+            document.getElementById("guess" + i).style.color = "#5cb85c";
         } 
         else if (data.guess[i] != data.solution[i] && data.lock[i] == 0){
             data.errorguess++;
+            document.getElementById("guess" + i).style.color = "#d9534f";
         }
     }
 
@@ -71,6 +73,7 @@ function generateSolution() { //used to create a new solution after solving the 
         data.lock[i] = 0; //we need to clear the lock array! Very important, or can't create new locks
         data.solution[i] = returnRandomInteger(data.solutionfloor, data.solutionceiling);
         document.getElementById("sol" + i).innerHTML = data.solution[i];
+        document.getElementById("guess" + i).style.color = "#0275d8"; //some visual feedback that a solution was reached
     }
 }
 
