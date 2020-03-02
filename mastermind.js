@@ -2,22 +2,35 @@ var data = {
     guess: [0, 0, 0],
     solution: [0, 0, 0],
     lock: [0, 0, 0],
-    solutionlength: 3, //number of integers in the solution
+    solutionlength: 3, //this is technically not required, but will save having to constantly run .length
     solutionceiling: 3, //the max value a solution integer can have
     solutionfloor: 0, //the min value a solution integer can have
-    correctguess: 0,
-    errorguess: 0
+    correctguess: 0, //currency
+    errorguess: 0,
+    solutionsolved: 0
 };
 
 window.onload = function() { //load some SOLUTION numbers at page load
-    for (i = 0; i < this.data.solution.length; i++) {
+    for (i = 0; i < this.data.solutionlength; i++) {
         this.data.solution[i] = this.returnRandomInteger(data.solutionfloor, data.solutionceiling);
         this.document.getElementById("sol" + i).innerHTML = this.data.solution[i];
     }
 }
 
-function guess() {
-    for (i = 0; i < data.guess.length; i++) {
+function guessLoop() { //begin the guess loop
+    guessLoopGlobal = setInterval(guess, 1000);
+    document.getElementById("guessbutton").disabled = true;
+    document.getElementById("guessbuttondisable").disabled = false;
+}
+
+function guessLoopDisable() { //disable the loop
+    clearInterval(guessLoopGlobal);
+    document.getElementById("guessbutton").disabled = false;
+    document.getElementById("guessbuttondisable").disabled = true;
+}
+
+function guess() { //principle solution guessing function
+    for (i = 0; i < data.solutionlength; i++) {
         if (data.lock[i] == 0)
         {
             data.guess[i] = returnRandomInteger(data.solutionfloor, data.solutionceiling);
@@ -28,19 +41,37 @@ function guess() {
     compare();
 }
 
-function compare() { //compare the solution & guess arrays
-    for (i = 0; i < data.solution.length; i++) {
-        if (data.guess[i] == data.solution[i] && data.lock[i] == 0) {
+function compare() { //compare the solution & guess arrays, lock any matches
+    var _lockcount = 0;
+
+    for (i = 0; i < data.solutionlength; i++) {
+        if (data.guess[i] == data.solution[i]) {
             data.correctguess++;
             data.lock[i] = 1; //lock the number as solution is correct - will prevent generating more numbers until cleared
+            _lockcount++; //if lockcount == data.solutionlength at the end of the method, it means all numbers have been solved
         } 
         else if (data.guess[i] != data.solution[i] && data.lock[i] == 0){
             data.errorguess++;
         }
     }
 
+    if (_lockcount == data.solutionlength) {
+        data.solutionsolved++;
+        generateSolution();
+    }
+
     document.getElementById("correctguess").innerHTML = data.correctguess;
     document.getElementById("errorguess").innerHTML = data.errorguess;
+    document.getElementById("solutionsolved").innerHTML = data.solutionsolved;
+
+}
+
+function generateSolution() { //used to create a new solution after solving the previous one
+    for (i = 0; i < data.solutionlength; i++) {
+        data.lock[i] = 0; //we need to clear the lock array! Very important, or can't create new locks
+        data.solution[i] = returnRandomInteger(data.solutionfloor, data.solutionceiling);
+        document.getElementById("sol" + i).innerHTML = data.solution[i];
+    }
 }
 
 function returnRandomInteger(min, max) { //returns a random integer, min & max included
