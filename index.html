@@ -9,16 +9,24 @@
     </head>
 
     <body>
-        <button type="button" onclick="guess('guess0')">Attempt Guess</button>
-        <div>SOLUTION</div>
-            <span id="sol0">0</span>
-            <span id="sol1">0</span>          
-            <span id="sol2">0</span>
-        <div>GUESS</div>
-        <div>
-            <span id="guess0">0</span>
-            <span id="guess1">0</span>          
-            <span id="guess2">0</span>
-        </div> 
+        <button type="button" onclick="guess()">Attempt Guess</button>
+        <div class="centerblock">
+            <div>SOLUTION</div>
+            <div>
+                <div class="leftblock">
+                    <span>CORRECT: </span><span id="correctguess">0</span>
+                </div>
+                <span id="sol0">0</span>
+                <span id="sol1">0</span>          
+                <span id="sol2">0</span>
+            </div>
+            <div>GUESS</div>
+                <div class="leftblock">
+                    <span>ERROR: </span><span id="errorguess">0</span>
+                </div>
+                <span id="guess0">0</span>
+                <span id="guess1">0</span>          
+                <span id="guess2">0</span>
+        </div>
     </body>
 </html>

@@ -1,0 +1,16 @@
+.centerblock {
+    text-align: center;
+}
+
+.leftblock {
+    position: absolute;
+    left: 8px; /* default for 'body' */
+}
+
+#correctguess {
+    color: #5cb85c;
+}
+
+#errorguess {
+    color: #d9534f;
+}
