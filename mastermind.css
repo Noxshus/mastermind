@@ -22,8 +22,12 @@ body { /*undoing defaults*/
     padding-top: 20px;
 }
 
-#correctguess {
-    color: #5cb85c;
+.centerupgrades {
+    text-align: center;
+}
+
+#solvedsolution {
+    color: #0275d8;
 }
 
 #errorguess {
