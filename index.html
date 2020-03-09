@@ -9,37 +9,52 @@
     </head>
     <div class="header">PUT LINKS HERE - NOXSHUS</div> 
     <body>
-
-        <div class="leftblock">
+        <!--<div class="leftblock">
             <div>
                 <span>SOLVED: </span><span id="solvedsolution">0</span>
             </div>
             <div>
                 <span>ERROR: </span><span id="errorguess">0</span>
             </div>
+        </div>-->
+        <div class="flexbox">
+            <div class="leftcolumn">
+                <div id="currencydiv">
+                    <span>SOLVED: </span><span id="solvedsolution">0</span>
+                    <br>
+                    <span>ERROR: </span><span id="errorguess">0</span>
+                </div>
+            </div>
+            <div class="centercolumn">
+                <div>SOLUTION</div>
+                <div id="solutiondiv">
+                    <span id="sol0">0</span>
+                    <span id="sol1">0</span>          
+                    <span id="sol2">0</span></div><!--having the div here prevents adding a whitespace on appendchild-->
+                <div>GUESS</div>
+                <div id="guessdiv">
+                    <span id="guess0">0</span>
+                    <span id="guess1">0</span>          
+                    <span id="guess2">0</span></div>
+            </div>
+            <div class="rightcolumn">
+                <span>test</span>
+            </div>
         </div>
-
-        <div class="centerblock">
-            <div>SOLUTION</div>
-            <div id="solutiondiv">
-                <span id="sol0">0</span>
-                <span id="sol1">0</span>          
-                <span id="sol2">0</span>
-            </div>
-            <div>GUESS</div>
-            <div id="guessdiv">
-                <span id="guess0">0</span>
-                <span id="guess1">0</span>          
-                <span id="guess2">0</span>
-            </div>
-            <hr>
-            <button id="guessbutton" type="button" onclick="guessLoop()">INITIATE GUESS LOOP</button>
-            <button id="guessbuttondisable" type="button" disabled onclick="guessLoopDisable()">DISABLE GUESS LOOP</button>
+        <hr><!--simple line-->
+        <div class="flexbox">
+            <div class="leftcolumn"></div>
+            <div class="centercolumn">
+                <button id="guessbutton" type="button" onclick="guessLoop()">INITIATE GUESS LOOP</button>
+                <button id="guessbuttondisable" type="button" disabled onclick="guessLoopDisable()">DISABLE GUESS LOOP</button>
+            </div> 
+            <div class="rightcolumn"></div>
         </div>
 
         <div class="centerupgrades">
             <button id="solutionlengthbutton" style="display: none;" type="button" onclick="upgradeSolutionLength()">UPGRADE SOLUTION LENGTH</button>
-            <button type="button" onclick="devAddSolution()">FREE SOLUTIONS</button>           
+            <button id="solutionceilingbutton" style="display: none;" type="button" onclick="upgradeSolutionCeiling()">UPGRADE SOLUTION CEILING</button>
+            <button class="devtool" type="button" onclick="devAddSolution()">DEV: SOLUTIONS</button>           
         </div>
     </body>
 </html>

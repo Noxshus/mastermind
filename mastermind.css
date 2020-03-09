@@ -1,6 +1,5 @@
 body { /*undoing defaults*/
     margin: 0;
-    padding: 0;
 }
 
 .header {
@@ -9,21 +8,33 @@ body { /*undoing defaults*/
     font-size: 10px;
 }
 
-.centerblock {
+.devtool {
+    display: none;
+}
+
+/*.centerblock {
+    text-align: center;
+}*/
+
+.flexbox {
+    display: flex;
+}
+  
+.leftcolumn {
+    flex: 1;
+}
+
+.centercolumn {
+    flex: 1;
     text-align: center;
 }
 
-.leftblock {
-    height: 100%;
-    width: 200px;
-    position: fixed;
-    top: 0;
-    left: 8px;
-    padding-top: 20px;
+.rightcolumn {
+    flex: 1;
 }
 
-.centerupgrades {
-    text-align: center;
+#currencydiv {
+    padding-left: 8px;
 }
 
 #solvedsolution {
