@@ -12,10 +12,6 @@ body { /*undoing defaults*/
     display: none;
 }
 
-/*.centerblock {
-    text-align: center;
-}*/
-
 .flexbox {
     display: flex;
 }
@@ -26,14 +22,25 @@ body { /*undoing defaults*/
 
 .centercolumn {
     flex: 1;
-    text-align: center;
 }
 
 .rightcolumn {
     flex: 1;
 }
 
-#currencydiv {
+.aligncenter {
+    text-align: center;
+}
+
+.floatright {
+    float: right;
+}
+
+.floatleft {
+    float: left;
+}
+
+.paddingleft { /*amount of padding usually associated with the body*/
     padding-left: 8px;
 }
 

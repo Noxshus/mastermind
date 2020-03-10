@@ -9,23 +9,14 @@
     </head>
     <div class="header">PUT LINKS HERE - NOXSHUS</div> 
     <body>
-        <!--<div class="leftblock">
-            <div>
-                <span>SOLVED: </span><span id="solvedsolution">0</span>
-            </div>
-            <div>
-                <span>ERROR: </span><span id="errorguess">0</span>
-            </div>
-        </div>-->
         <div class="flexbox">
             <div class="leftcolumn">
-                <div id="currencydiv">
-                    <span>SOLVED: </span><span id="solvedsolution">0</span>
-                    <br>
-                    <span>ERROR: </span><span id="errorguess">0</span>
+                <div class="paddingleft">
+                    <div>SOLVED: <span id="solvedsolution">0</div>
+                    <div>ERROR: <span id="errorguess">0</div>
                 </div>
             </div>
-            <div class="centercolumn">
+            <div class="centercolumn aligncenter">
                 <div>SOLUTION</div>
                 <div id="solutiondiv">
                     <span id="sol0">0</span>
@@ -38,23 +29,38 @@
                     <span id="guess2">0</span></div>
             </div>
             <div class="rightcolumn">
-                <span>test</span>
+                <span style="text-align: center;">test</span>
             </div>
+        </div>
+        <hr>
+        <div class="flexbox">
+            <div class="leftcolumn">
+                <div class="paddingleft">
+                    <span>Error Count: <span id="errorstosolvecurrent">0</span></span>
+                    <br>
+                    <span>Previous Error Count: <span id="errorstosolveprevious">0</span></span>
+                </div>
+            </div>
+            <div class="centercolumn">
+                <span>Current Time: <span id="timetosolvecurrent">0</span> sec</span><span class="floatright"><span id="ticktosolvecurrent">0</span> :Tick Count</span>
+                <br>
+                <span>Previous Time: <span id="timetosolveprevious">0</span> sec</span><span class="floatright"><span id="ticktosolveprevious">0</span> :Previous Tick Count</span>
+            </div>
+            <div class="rightcolumn"></div>
         </div>
         <hr><!--simple line-->
         <div class="flexbox">
-            <div class="leftcolumn"></div>
-            <div class="centercolumn">
+            <div class="leftcolumn">
+                <button id="solutionlengthbutton" style="display: none;" type="button" onclick="upgradeSolutionLength()">UPGRADE SOLUTION LENGTH</button>
+                <button id="solutionceilingbutton" style="display: none;" type="button" onclick="upgradeSolutionCeiling()">UPGRADE SOLUTION CEILING</button>
+            </div>
+            <div class="centercolumn aligncenter">
                 <button id="guessbutton" type="button" onclick="guessLoop()">INITIATE GUESS LOOP</button>
                 <button id="guessbuttondisable" type="button" disabled onclick="guessLoopDisable()">DISABLE GUESS LOOP</button>
             </div> 
             <div class="rightcolumn"></div>
         </div>
-
-        <div class="centerupgrades">
-            <button id="solutionlengthbutton" style="display: none;" type="button" onclick="upgradeSolutionLength()">UPGRADE SOLUTION LENGTH</button>
-            <button id="solutionceilingbutton" style="display: none;" type="button" onclick="upgradeSolutionCeiling()">UPGRADE SOLUTION CEILING</button>
-            <button class="devtool" type="button" onclick="devAddSolution()">DEV: SOLUTIONS</button>           
-        </div>
+            
+        <button class="devtool" style="display: none;" type="button" onclick="devAddSolution()">DEV: SOLUTIONS</button>           
     </body>
 </html>
