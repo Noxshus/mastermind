@@ -44,6 +44,27 @@ body { /*undoing defaults*/
     padding-left: 8px;
 }
 
+.paddingright {
+    padding-right: 8px;
+}
+
+.progressbar {
+    height: 20px;
+    background-color: #292b2c;
+    padding: 1px;
+    border-radius: 3px;
+}
+
+#nodeprogress {
+    width: 0%;
+    height: 20px;
+    border-radius: 3px;
+    background-color: #0275d8;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+}
+
 #solvedsolution {
     color: #0275d8;
 }

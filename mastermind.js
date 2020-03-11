@@ -10,9 +10,15 @@ var data = {
     solutionSolved: 0,
     tickSpeed: 1000, //ms
     flag: Array(5).fill(0), //not supported on IE
-    timeToSolve: [0, 0, 0],
-    tickToSolve: [0, 0, 0],
-    errorsToSolve: [0, 0, 0], //contains a count of the number of errors generated per solve
+    timeToSolve: [0, 0, 0, 0],
+    tickToSolve: [0, 0, 0, 0],
+    errorsToSolve: [0, 0, 0, 0], //contains a count of the number of errors generated per solve
+    timeMean: 0, //storage for mean values
+    tickMean: 0,
+    errorMean: 0,
+    nodeXP: 0, //holds xp towards a node
+    nodeXPToLevel: 100, //node XP required to level up and gain a new node
+    totalNodes: 0,
 };
 
 window.onload = function() {
@@ -26,7 +32,12 @@ window.onload = function() {
     }
 
     document.getElementById("guessbuttondisable").disabled = true; //sometimes, on refresh, disabled button isn't disabled by default for some reason
+
+    document.getElementById("nodexp").innerHTML = this.data.nodeXP;
+    document.getElementById("nodexptolevel").innerHTML = this.data.nodeXPToLevel;
 }
+
+// Functions related to the guess - compare - generate loop -------------------------------------------------------------------------------------
 
 var updateLoop = setInterval(update, 1000); //seperate to everything else, we run checks to see if stuff needs to be unlocked. Seperated from the guessLoop so that we don't spam checks needlessly
 
@@ -59,12 +70,25 @@ function guess() { //principle solution guessing function
         }
     }
 
-    updateErrorsToSolve("tick");
-    updateTimeToSolve("tick");
-    compare();
+    if (compare() == true) { //solution was reached
+        data.solutionSolved++; // NEEDS TO BE UPDATED *******************************
+        updateTimeToSolve("tick"); //process time statistics because we still needed a tick to get here
+        gainNodeProgress();
+        generateSolution("solved");
+    }
+    else //solution not reached, generates error(s)
+    {
+        updateErrorsToSolve("tick"); //we only update errors-to-solve on a tick and not on a solution because otherwise we get one extra tick of errors
+        updateTimeToSolve("tick");
+        data.errorGuess++; // NEEDS TO BE UPDATED *******************************
+    }
+
+    document.getElementById("errorguess").innerHTML = data.errorGuess;
+    document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
 }
 
-function compare() { //compare the solution & guess arrays, lock any matches
+function compare() //compare the solution & guess arrays, lock any matches, increment values, call for a new solution
+{ 
     var _lockcount = 0;
 
     for (i = 0; i < data.solution.length; i++) {
@@ -79,19 +103,16 @@ function compare() { //compare the solution & guess arrays, lock any matches
     }
 
     if (_lockcount == data.solution.length) {
-        data.solutionSolved++;
-        generateSolution("solved");
+        return true; //solution solved!
     } 
     else {
-        data.errorGuess++;
+        return false; //solution not solved
+        
     }
-
-    document.getElementById("errorguess").innerHTML = data.errorGuess;
-    document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
-
 }
 
-function generateSolution(reason) { //used to create a new solution after solving the previous one
+function generateSolution(reason) //used to create a new solution after solving the previous one
+{ 
     switch (reason) {
         case "solved": //we generate a new solution when solving the old one
             for (i = 0; i < data.solution.length; i++) {
@@ -112,8 +133,34 @@ function generateSolution(reason) { //used to create a new solution after solvin
             }
             break;
     }
-    
-    
+}
+
+// Functions related to nodes --------------------------------------------------------------------------------------------------------------------------------------
+
+function gainNodeProgress()
+{
+    var _nodePercent = 0;
+
+    data.nodeXP++; // NEEDS TO BE UPDATED *******************************
+
+    if (data.nodeXP >= data.nodeXPToLevel) //if incrementing xp right now caused us to level up, then do so (to )
+    {
+        levelUpNode();
+    }
+
+    _nodePercent = (data.nodeXP / data.nodeXPToLevel) * 100;
+    document.getElementById("nodeprogress").style.width = _nodePercent + "%";
+    document.getElementById("nodeprogresstext").innerHTML = _nodePercent + "%";
+    document.getElementById("nodexp").innerHTML = data.nodeXP;
+}
+
+function levelUpNode()
+{
+    data.totalNodes++;
+    data.nodeXP = data.nodeXP - data.nodeXPToLevel; //so we can keep any overflow to the next level
+    data.nodeXPToLevel = data.nodeXPToLevel * 2; // NEEDS TO BE UPDATED --- PROGRESSION
+    _nodePercent = (data.nodeXP / data.nodeXPToLevel) * 100;
+    document.getElementById("nodexptolevel").innerHTML = data.nodeXPToLevel;
 }
 
 
@@ -125,6 +172,8 @@ function upgradeSolutionLength()
         data.solutionSolved = data.solutionSolved - 10;
 
         extendArrays(); //extend the length of the arrays (+ will run the HTML update)
+        generateSolution("upgrade");
+        clearStatistics();
     }    
 }
 
@@ -134,22 +183,17 @@ function extendArrays() //used when increasing the solution length
     data.guess.push(0);
     data.lock.push(0); //should default to unlocked - guess loop will lock it if it's already correct
 
-    updateHTMLWithSolutionLengthIncrease();
-    generateSolution("upgrade");
-}
-
-function updateHTMLWithSolutionLengthIncrease() //used to update the HTML after extending the arrays
-{
-    var newSolutionElement = document.createElement("span");
-    newSolutionElement.id = "sol" + (data.solution.length - 1);
-    newSolutionElement.innerHTML = 0;
+    //update the HTML after extending the arrays
+    var _newSolutionElement = document.createElement("span"); 
+    _newSolutionElement.id = "sol" + (data.solution.length - 1);
+    _newSolutionElement.innerHTML = 0;
     document.getElementById("solutiondiv").appendChild(document.createTextNode (" "));
-    document.getElementById("solutiondiv").appendChild(newSolutionElement);
-    var newGuessElement = document.createElement("span");
-    newGuessElement.id = "guess" + (data.solution.length - 1);
-    newGuessElement.innerHTML = 0;
+    document.getElementById("solutiondiv").appendChild(_newSolutionElement);
+    var _newGuessElement = document.createElement("span");
+    _newGuessElement.id = "guess" + (data.solution.length - 1);
+    _newGuessElement.innerHTML = 0;
     document.getElementById("guessdiv").appendChild(document.createTextNode (" "));
-    document.getElementById("guessdiv").appendChild(newGuessElement);
+    document.getElementById("guessdiv").appendChild(_newGuessElement);
 }
 
 // Functions related to upgrading solution floor + ceiling --------------------------------------------------------------------------------------------------
@@ -160,6 +204,7 @@ function upgradeSolutionCeiling()
         data.solutionSolved = data.solutionSolved - 10;
 
         data.solutionCeiling++;
+        clearStatistics();
         generateSolution("upgrade"); //generate a fresh solution using the new ceiling
     }    
 }
@@ -170,11 +215,9 @@ function updateTimeToSolve(reason) //function to update the time-related statist
 {
     switch (reason)
     {
-        case "solved": //if we solved, then need to update previous time [1] with current [0] + reset the current time [0]
-            data.timeToSolve[1] = data.timeToSolve[0];
-            data.timeToSolve[0] = 0;
-            data.tickToSolve[1] = data.tickToSolve[0];
-            data.tickToSolve[0] = 0;
+        case "solved": //if we solved
+            updateMean("time"); //if we solved, then need to update previous time [1] with current [0] + reset the current time [0] + shift all previous times right
+            updateMean("tick"); //as above, but for ticks
             document.getElementById("timetosolveprevious").innerHTML = data.timeToSolve[1];
             document.getElementById("ticktosolveprevious").innerHTML = data.tickToSolve[1];
             break;
@@ -184,6 +227,14 @@ function updateTimeToSolve(reason) //function to update the time-related statist
             document.getElementById("timetosolvecurrent").innerHTML = data.timeToSolve[0];
             document.getElementById("ticktosolvecurrent").innerHTML = data.tickToSolve[0];
             break;
+        case "clear":
+            document.getElementById("timetosolvecurrent").innerHTML = data.timeToSolve[0];
+            document.getElementById("ticktosolvecurrent").innerHTML = data.tickToSolve[0];
+            document.getElementById("timetosolveprevious").innerHTML = data.timeToSolve[1];
+            document.getElementById("ticktosolveprevious").innerHTML = data.tickToSolve[1];
+            document.getElementById("timemean").innerHTML = data.timeMean;
+            document.getElementById("tickmean").innerHTML = data.tickMean;
+            break;
     }
 }
 
@@ -192,15 +243,95 @@ function updateErrorsToSolve(reason) //functions mostly the same as above
     switch (reason)
     {
         case "solved":
-            data.errorsToSolve[1] = data.errorsToSolve[0] - 1; //-1 because we're ticking first, which adds an error, but no error is generated on a solveNEEDS TO BE UPDATED *************************
-            data.errorsToSolve[0] = 0;
+            updateMean("error");
             document.getElementById("errorstosolveprevious").innerHTML = data.errorsToSolve[1];
             break;
         case "tick":
             data.errorsToSolve[0] = data.errorsToSolve[0] + 1; //NEEDS TO BE UPDATED *************************
             document.getElementById("errorstosolvecurrent").innerHTML = data.errorsToSolve[0];
             break;
+        case "clear":
+            document.getElementById("errorstosolvecurrent").innerHTML = data.errorsToSolve[0];
+            document.getElementById("errorstosolveprevious").innerHTML = data.errorsToSolve[1];
+            document.getElementById("errormean").innerHTML = data.errorMean;
+            break;
     }
+}
+
+function updateMean(type) //function to shift all the numbers in the array to the right, then calculate the mean and update HTML
+{
+    var _total = 0; //used to hold the sum
+    var _rawNumber = 0; //use to hold the average before decimal pruning
+    switch (type)
+    {
+        case "time":
+            for (i = data.timeToSolve.length - 1; i >= 0; i--) {
+                if (i == 0)
+                {
+                    data.timeToSolve[i] = 0;
+                }
+                else {
+                    data.timeToSolve[i] = data.timeToSolve[i - 1];
+                    _total = _total + data.timeToSolve[i];
+                }
+            }
+            _rawNumber = _total / (data.timeToSolve.length - 1);
+            data.timeMean = _rawNumber.toFixed(2);
+            document.getElementById("timemean").innerHTML = data.timeMean;
+            break;
+
+        case "tick":
+            for (i = data.tickToSolve.length - 1; i >= 0; i--) {
+                if (i == 0)
+                {
+                    data.tickToSolve[i] = 0;
+                }
+                else {
+                    data.tickToSolve[i] = data.tickToSolve[i - 1];
+                    _total = _total + data.tickToSolve[i];
+                }
+            }
+            _rawNumber = _total / (data.tickToSolve.length - 1);
+            data.tickMean = _rawNumber.toFixed(2);
+            document.getElementById("tickmean").innerHTML = data.tickMean;
+            break;
+
+        case "error":
+            for (i = data.errorsToSolve.length - 1; i >= 0; i--) {
+                if (i == 0)
+                {
+                    data.errorsToSolve[i] = 0;
+                }
+                else {
+                    data.errorsToSolve[i] = data.errorsToSolve[i - 1];
+                    _total = _total + data.errorsToSolve[i];
+                }
+            }
+            _rawNumber = _total / (data.errorsToSolve.length - 1);
+            data.errorMean = _rawNumber.toFixed(2);
+            document.getElementById("errormean").innerHTML = data.errorMean;
+            break;
+    }
+}
+
+function clearStatistics() //clears all previous statistical values (but leaves current ones alone)
+{
+    //start at i = 1 to avoid clearing 0 (current value
+    for (i = 1; i < data.timeToSolve.length; i++) {
+        data.timeToSolve[i] = 0;
+    }
+    data.timeMean = 0;
+    for (i = 1; i < data.tickToSolve.length; i++) {
+        data.tickToSolve[i] = 0;
+    }
+    data.tickMean = 0;
+    for (i = 1; i < data.errorsToSolve.length; i++) {
+        data.errorsToSolve[i] = 0;
+    }
+    data.errorMean = 0;
+
+    updateTimeToSolve("clear");
+    updateErrorsToSolve("clear");
 }
 
 //DEV FUNCTIONS --------------------------------------------------------------------------------------------------
@@ -208,29 +339,34 @@ function updateErrorsToSolve(reason) //functions mostly the same as above
 function enableDev()
 {
     //display all testing buttons
-    var dev = document.getElementsByClassName("devtool");
-    for (i = 0; i < dev.length; i++) {
-            dev[i].style.display = "inline";
+    var _dev = document.getElementsByClassName("devtool");
+    for (i = 0; i < _dev.length; i++) {
+            _dev[i].style.display = "inline";
     }
 
     //make all flex coloumns more obvious
-    var columnstyle = document.getElementsByClassName("leftcolumn");
-    for (i = 0; i < columnstyle.length; i++) {
-        columnstyle[i].style.backgroundColor = "#D0D0D0";
+    var _columnstyle = document.getElementsByClassName("leftcolumn");
+    for (i = 0; i < _columnstyle.length; i++) {
+        _columnstyle[i].style.backgroundColor = "#D0D0D0";
     }
-    columnstyle = document.getElementsByClassName("centercolumn");
-    for (i = 0; i < columnstyle.length; i++) {
-        columnstyle[i].style.backgroundColor = "#E0E0E0";
+    _columnstyle = document.getElementsByClassName("centercolumn");
+    for (i = 0; i < _columnstyle.length; i++) {
+        _columnstyle[i].style.backgroundColor = "#E0E0E0";
     }
-    columnstyle = document.getElementsByClassName("rightcolumn");
-    for (i = 0; i < columnstyle.length; i++) {
-        columnstyle[i].style.backgroundColor = "#C0C0C0";
+    _columnstyle = document.getElementsByClassName("rightcolumn");
+    for (i = 0; i < _columnstyle.length; i++) {
+        _columnstyle[i].style.backgroundColor = "#C0C0C0";
     }
 }
 
 function devAddSolution()
 {
     data.solutionSolved = data.solutionSolved + 10;
+}
+
+function devAddNodeXP()
+{
+    data.nodeXP = data.nodeXPToLevel - 3;
 }
 
 //MISC FUNCTIONS --------------------------------------------------------------------------------------------------

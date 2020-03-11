@@ -28,8 +28,16 @@
                     <span id="guess1">0</span>          
                     <span id="guess2">0</span></div>
             </div>
-            <div class="rightcolumn">
-                <span style="text-align: center;">test</span>
+            <div class="rightcolumn aligncenter">
+                <div>NODE CONSTRUCTION</div>
+                <div class="paddingright paddingleft">
+                    <div class="progressbar">
+                        <div id="nodeprogress">
+                            <div id="nodeprogresstext">0%</div>
+                        </div>
+                    </div>
+                </div>
+                <div><span id="nodexp">0</span> / <span id="nodexptolevel">0</span></div>
             </div>
         </div>
         <hr>
@@ -39,28 +47,35 @@
                     <span>Error Count: <span id="errorstosolvecurrent">0</span></span>
                     <br>
                     <span>Previous Error Count: <span id="errorstosolveprevious">0</span></span>
+                    <br>
+                    <span>Mean Error Count: <span id="errormean">0</span></span>
                 </div>
             </div>
             <div class="centercolumn">
                 <span>Current Time: <span id="timetosolvecurrent">0</span> sec</span><span class="floatright"><span id="ticktosolvecurrent">0</span> :Tick Count</span>
                 <br>
                 <span>Previous Time: <span id="timetosolveprevious">0</span> sec</span><span class="floatright"><span id="ticktosolveprevious">0</span> :Previous Tick Count</span>
+                <br>
+                <span>Mean Time: <span id="timemean">0</span> sec</span><span class="floatright"><span id="tickmean">0</span> :Mean Tick Count</span>
             </div>
-            <div class="rightcolumn"></div>
+            <div class="rightcolumn">
+                <button id="clearstatsbutton" type="button" onclick="clearStatistics()">Clear Statistics</button>
+            </div>
         </div>
         <hr><!--simple line-->
         <div class="flexbox">
             <div class="leftcolumn">
-                <button id="solutionlengthbutton" style="display: none;" type="button" onclick="upgradeSolutionLength()">UPGRADE SOLUTION LENGTH</button>
-                <button id="solutionceilingbutton" style="display: none;" type="button" onclick="upgradeSolutionCeiling()">UPGRADE SOLUTION CEILING</button>
+                <button id="solutionlengthbutton" style="display: none;" type="button" onclick="upgradeSolutionLength()">Upgrade Solution Length</button>
+                <button id="solutionceilingbutton" style="display: none;" type="button" onclick="upgradeSolutionCeiling()">Upgrade Solution Ceiling</button>
             </div>
             <div class="centercolumn aligncenter">
-                <button id="guessbutton" type="button" onclick="guessLoop()">INITIATE GUESS LOOP</button>
-                <button id="guessbuttondisable" type="button" disabled onclick="guessLoopDisable()">DISABLE GUESS LOOP</button>
+                <button id="guessbutton" type="button" onclick="guessLoop()">Initiate Guess Loop</button>
+                <button id="guessbuttondisable" type="button" disabled onclick="guessLoopDisable()">Disable Guess Loop</button>
             </div> 
             <div class="rightcolumn"></div>
         </div>
             
-        <button class="devtool" style="display: none;" type="button" onclick="devAddSolution()">DEV: SOLUTIONS</button>           
+        <button class="devtool" style="display: none;" type="button" onclick="devAddSolution()">DEV: SOLUTIONS</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devAddNodeXP()">DEV: NODE XP</button>             
     </body>
 </html>
