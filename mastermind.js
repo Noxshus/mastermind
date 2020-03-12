@@ -1,4 +1,4 @@
-var devTools = 1;
+let devTools = 1;
 
 var data = {
     guess: [0, 0, 0],
@@ -26,7 +26,7 @@ window.onload = function() {
         this.enableDev();
     }
 
-    for (i = 0; i < this.data.solution.length; i++) { //load some SOLUTION numbers at page load
+    for (let i = 0; i < this.data.solution.length; i++) { //load some SOLUTION numbers at page load
         this.data.solution[i] = this.returnRandomInteger(data.solutionFloor, data.solutionCeiling);
         this.document.getElementById("sol" + i).innerHTML = this.data.solution[i];
     }
@@ -39,7 +39,7 @@ window.onload = function() {
 
 // Functions related to the guess - compare - generate loop -------------------------------------------------------------------------------------
 
-var updateLoop = setInterval(update, 1000); //seperate to everything else, we run checks to see if stuff needs to be unlocked. Seperated from the guessLoop so that we don't spam checks needlessly
+let updateLoop = setInterval(update, 1000); //seperate to everything else, we run checks to see if stuff needs to be unlocked. Seperated from the guessLoop so that we don't spam checks needlessly
 
 function update() {
     if (data.solutionSolved >= 10) //reveal solution length button after solving 10 codes
@@ -62,7 +62,7 @@ function guessLoopDisable() { //disable the loop
 }
 
 function guess() { //principle solution guessing function
-    for (i = 0; i < data.solution.length; i++) {
+    for (let i = 0; i < data.solution.length; i++) {
         if (data.lock[i] == 0)
         {
             data.guess[i] = returnRandomInteger(data.solutionFloor, data.solutionCeiling);
@@ -89,9 +89,9 @@ function guess() { //principle solution guessing function
 
 function compare() //compare the solution & guess arrays, lock any matches, increment values, call for a new solution
 { 
-    var _lockcount = 0;
+    let _lockcount = 0;
 
-    for (i = 0; i < data.solution.length; i++) {
+    for (let i = 0; i < data.solution.length; i++) {
         if (data.guess[i] == data.solution[i]) {
             data.lock[i] = 1; //lock the number as solution is correct - will prevent generating more numbers until cleared
             _lockcount++; //if lockcount == data.solutionlength at the end of the method, it means all numbers have been solved
@@ -115,7 +115,7 @@ function generateSolution(reason) //used to create a new solution after solving 
 { 
     switch (reason) {
         case "solved": //we generate a new solution when solving the old one
-            for (i = 0; i < data.solution.length; i++) {
+            for (let i = 0; i < data.solution.length; i++) {
                 data.lock[i] = 0; //we need to clear the lock array! Very important, or can't create new locks
                 data.solution[i] = returnRandomInteger(data.solutionFloor, data.solutionCeiling);
                 document.getElementById("sol" + i).innerHTML = data.solution[i];
@@ -125,7 +125,7 @@ function generateSolution(reason) //used to create a new solution after solving 
             updateTimeToSolve(reason);
             break;
         case "upgrade": //we generate a new solution when upgrading. Guess to yellow instead of blue; clear time-to-solve
-            for (i = 0; i < data.solution.length; i++) {
+            for (let i = 0; i < data.solution.length; i++) {
                 data.lock[i] = 0; //we need to clear the lock array! Very important, or can't create new locks
                 data.solution[i] = returnRandomInteger(data.solutionFloor, data.solutionCeiling);
                 document.getElementById("sol" + i).innerHTML = data.solution[i];
@@ -139,7 +139,7 @@ function generateSolution(reason) //used to create a new solution after solving 
 
 function gainNodeProgress()
 {
-    var _nodePercent = 0;
+    let _nodePercent = 0;
 
     data.nodeXP++; // NEEDS TO BE UPDATED *******************************
 
@@ -183,12 +183,12 @@ function extendArrays() //used when increasing the solution length
     data.lock.push(0); //should default to unlocked - guess loop will lock it if it's already correct
 
     //update the HTML after extending the arrays
-    var _newSolutionElement = document.createElement("span"); 
+    let _newSolutionElement = document.createElement("span"); 
     _newSolutionElement.id = "sol" + (data.solution.length - 1);
     _newSolutionElement.innerHTML = 0;
     document.getElementById("solutiondiv").appendChild(document.createTextNode (" "));
     document.getElementById("solutiondiv").appendChild(_newSolutionElement);
-    var _newGuessElement = document.createElement("span");
+    let _newGuessElement = document.createElement("span");
     _newGuessElement.id = "guess" + (data.solution.length - 1);
     _newGuessElement.innerHTML = 0;
     document.getElementById("guessdiv").appendChild(document.createTextNode (" "));
@@ -259,12 +259,12 @@ function updateErrorsToSolve(reason) //functions mostly the same as above
 
 function updateMean(type) //function to shift all the numbers in the array to the right, then calculate the mean and update HTML
 {
-    var _total = 0; //used to hold the sum
-    var _rawNumber = 0; //use to hold the average before decimal pruning
+    let _total = 0; //used to hold the sum
+    let _rawNumber = 0; //use to hold the average before decimal pruning
     switch (type)
     {
         case "time":
-            for (i = data.timeToSolve.length - 1; i >= 0; i--) {
+            for (let i = data.timeToSolve.length - 1; i >= 0; i--) {
                 if (i == 0)
                 {
                     data.timeToSolve[i] = 0;
@@ -280,7 +280,7 @@ function updateMean(type) //function to shift all the numbers in the array to th
             break;
 
         case "tick":
-            for (i = data.tickToSolve.length - 1; i >= 0; i--) {
+            for (let i = data.tickToSolve.length - 1; i >= 0; i--) {
                 if (i == 0)
                 {
                     data.tickToSolve[i] = 0;
@@ -296,7 +296,7 @@ function updateMean(type) //function to shift all the numbers in the array to th
             break;
 
         case "error":
-            for (i = data.errorsToSolve.length - 1; i >= 0; i--) {
+            for (let i = data.errorsToSolve.length - 1; i >= 0; i--) {
                 if (i == 0)
                 {
                     data.errorsToSolve[i] = 0;
@@ -316,15 +316,15 @@ function updateMean(type) //function to shift all the numbers in the array to th
 function clearStatistics() //clears all previous statistical values (but leaves current ones alone)
 {
     //start at i = 1 to avoid clearing 0 (current value
-    for (i = 1; i < data.timeToSolve.length; i++) {
+    for (let i = 1; i < data.timeToSolve.length; i++) {
         data.timeToSolve[i] = 0;
     }
     data.timeMean = 0;
-    for (i = 1; i < data.tickToSolve.length; i++) {
+    for (let i = 1; i < data.tickToSolve.length; i++) {
         data.tickToSolve[i] = 0;
     }
     data.tickMean = 0;
-    for (i = 1; i < data.errorsToSolve.length; i++) {
+    for (let i = 1; i < data.errorsToSolve.length; i++) {
         data.errorsToSolve[i] = 0;
     }
     data.errorMean = 0;
@@ -338,22 +338,22 @@ function clearStatistics() //clears all previous statistical values (but leaves 
 function enableDev()
 {
     //display all testing buttons
-    var _dev = document.getElementsByClassName("devtool");
-    for (i = 0; i < _dev.length; i++) {
+    const _dev = document.getElementsByClassName("devtool");
+    for (let i = 0; i < _dev.length; i++) {
             _dev[i].style.display = "inline";
     }
 
     //make all flex coloumns more obvious
-    var _columnstyle = document.getElementsByClassName("leftcolumn");
-    for (i = 0; i < _columnstyle.length; i++) {
+    let _columnstyle = document.getElementsByClassName("leftcolumn");
+    for (let i = 0; i < _columnstyle.length; i++) {
         _columnstyle[i].style.backgroundColor = "#D0D0D0";
     }
     _columnstyle = document.getElementsByClassName("centercolumn");
-    for (i = 0; i < _columnstyle.length; i++) {
+    for (let i = 0; i < _columnstyle.length; i++) {
         _columnstyle[i].style.backgroundColor = "#E0E0E0";
     }
     _columnstyle = document.getElementsByClassName("rightcolumn");
-    for (i = 0; i < _columnstyle.length; i++) {
+    for (let i = 0; i < _columnstyle.length; i++) {
         _columnstyle[i].style.backgroundColor = "#C0C0C0";
     }
 }
