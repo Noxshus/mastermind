@@ -135,6 +135,21 @@ function generateSolution(reason) //used to create a new solution after solving 
     }
 }
 
+//Functions related to various upgrades
+
+function rollForCrit(critchance) //critchance should be a % value
+{
+    let roll = returnRandomInteger(0, 100);
+    
+    if (roll > critchance)
+    {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 // Functions related to nodes --------------------------------------------------------------------------------------------------------------------------------------
 
 function gainNodeProgress()
@@ -150,8 +165,12 @@ function gainNodeProgress()
 
     _nodePercent = (data.nodeXP / data.nodeXPToLevel) * 100;
     document.getElementById("nodeprogress").style.width = _nodePercent + "%";
-    document.getElementById("nodeprogresstext").innerHTML = _nodePercent + "%";
     document.getElementById("nodexp").innerHTML = data.nodeXP;
+
+    if (Number.isInteger(_nodePercent) == false) { //Haven't quite understood why, but sometimes the % number gets like 10 decimal places. In that instance, only display 2 places
+        _nodePercent = _nodePercent.toFixed(2);
+    }
+    document.getElementById("nodeprogresstext").innerHTML = _nodePercent + "%";
 }
 
 function levelUpNode()
@@ -161,6 +180,7 @@ function levelUpNode()
     data.nodeXPToLevel = data.nodeXPToLevel * 2; // NEEDS TO BE UPDATED --- PROGRESSION
     _nodePercent = (data.nodeXP / data.nodeXPToLevel) * 100;
     document.getElementById("nodexptolevel").innerHTML = data.nodeXPToLevel;
+    document.getElementById("nodecount").innerHTML = data.totalNodes;
 }
 
 // Functions related to upgrading solution length ---------------------------------------------------------------------------

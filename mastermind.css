@@ -72,7 +72,8 @@ body { /*undoing defaults*/
 
 #nodeprogresstext {
     color: white;
-    position: relative;
+    position: relative; 
+    top: 1px; /*used to counter the padding added by .progressbar*/
     z-index: 2;
 }
 
@@ -82,5 +83,9 @@ body { /*undoing defaults*/
 
 #errorguess {
     color: #d9534f;
+}
+
+#nodecount {
+    color:  #0275d8;
 }
 
