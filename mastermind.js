@@ -163,7 +163,6 @@ function levelUpNode()
     document.getElementById("nodexptolevel").innerHTML = data.nodeXPToLevel;
 }
 
-
 // Functions related to upgrading solution length ---------------------------------------------------------------------------
 
 function upgradeSolutionLength()
