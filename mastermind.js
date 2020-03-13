@@ -1,10 +1,11 @@
 let devTools = 1;
 
 var data = {
-    guess: [0, 0, 0],
-    solution: [0, 0, 0],
-    lock: [0, 0, 0],
-    solutionCeiling: 3, //the max value a solution integer can have
+    guess: [0, 0, 0, 0],
+    solution: [0, 0, 0, 0],
+    accuracy: 0,
+    lock: [0, 0, 0, 0],
+    solutionCeiling: 4, //the max value a solution integer can have
     solutionFloor: 0, //the min value a solution integer can have
     errorGuess: 0,
     solutionSolved: 0,
@@ -37,7 +38,7 @@ window.onload = function() {
     document.getElementById("nodexptolevel").innerHTML = this.data.nodeXPToLevel;
 }
 
-// Functions related to the guess - compare - generate loop -------------------------------------------------------------------------------------
+// Functions related to the #guess - #compare - #generate loop -------------------------------------------------------------------------------------
 
 let updateLoop = setInterval(update, 1000); //seperate to everything else, we run checks to see if stuff needs to be unlocked. Seperated from the guessLoop so that we don't spam checks needlessly
 
@@ -62,86 +63,81 @@ function guessLoopDisable() { //disable the loop
 }
 
 function guess() { //principle solution guessing function
-    for (let i = 0; i < data.solution.length; i++) {
-        if (data.lock[i] == 0)
-        {
-            data.guess[i] = returnRandomInteger(data.solutionFloor, data.solutionCeiling);
-            document.getElementById("guess" + i).innerHTML = data.guess[i];
-        }
+    for (let i = 0; i < data.solution.length; i++) { //attempt a guess
+        data.guess[i] = returnWeighedGuessInteger(data.solution[i]);
+        document.getElementById("guess" + i).innerHTML = data.guess[i];
     }
 
-    if (compare() == true) { //solution was reached
+    const _correctGuessCount = compare();
+
+    if (_correctGuessCount == data.solution.length) { //guess matched the solution
         data.solutionSolved++; // NEEDS TO BE UPDATED *******************************
         updateTimeToSolve("tick"); //process time statistics because we still needed a tick to get here
-        gainNodeProgress();
-        generateSolution("solved");
+        gainNodeProgress(); //gain progress towards building a node
+
+        data.accuracy = 0; //reset accuracy value
+
+        upgrade();
+        
+        document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
     }
-    else //solution not reached, generates error(s)
-    {
+    else { //solution not reached, generates error(s) & need to check if we need to increase accuracy value
         updateErrorsToSolve("tick"); //we only update errors-to-solve on a tick and not on a solution because otherwise we get one extra tick of errors
         updateTimeToSolve("tick");
         data.errorGuess++; // NEEDS TO BE UPDATED *******************************
-    }
 
-    document.getElementById("errorguess").innerHTML = data.errorGuess;
-    document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
+        if (data.accuracy < _correctGuessCount) //increase accuracy if we're getting closer to the solution
+        {
+            data.accuracy = _correctGuessCount;
+            document.getElementById("accuracy").innerHTML = data.accuracy;
+        }
+
+        document.getElementById("errorguess").innerHTML = data.errorGuess;
+    }
 }
 
-function compare() //compare the solution & guess arrays, lock any matches, increment values, call for a new solution
-{ 
-    let _lockcount = 0;
+function compare() //compare the solution & guess arrays, returns the number of correct guesses
+{
+    let _correctGuessCount = 0; //reset correct guess count at the start of the loop
 
     for (let i = 0; i < data.solution.length; i++) {
         if (data.guess[i] == data.solution[i]) {
-            data.lock[i] = 1; //lock the number as solution is correct - will prevent generating more numbers until cleared
-            _lockcount++; //if lockcount == data.solutionlength at the end of the method, it means all numbers have been solved
-            document.getElementById("guess" + i).style.color = "#5cb85c";
+            _correctGuessCount++;
+            document.getElementById("guess" + i).style.color = "#5bc0de"; //light blue
         } 
-        else if (data.guess[i] != data.solution[i] && data.lock[i] == 0){           
-            document.getElementById("guess" + i).style.color = "#d9534f";
+        else if (data.guess[i] != data.solution[i]) {           
+            document.getElementById("guess" + i).style.color = "#d9534f"; //red
         }
     }
 
-    if (_lockcount == data.solution.length) {
-        return true; //solution solved!
-    } 
-    else {
-        return false; //solution not solved
-        
-    }
+    return _correctGuessCount;
 }
 
 function generateSolution(reason) //used to create a new solution after solving the previous one
 { 
     switch (reason) {
-        case "solved": //we generate a new solution when solving the old one
+        case "solved": //we generate a new solution when solving the old one; logic is currently the same regardless
+        case "upgrade":
             for (let i = 0; i < data.solution.length; i++) {
-                data.lock[i] = 0; //we need to clear the lock array! Very important, or can't create new locks
                 data.solution[i] = returnRandomInteger(data.solutionFloor, data.solutionCeiling);
                 document.getElementById("sol" + i).innerHTML = data.solution[i];
-                document.getElementById("guess" + i).style.color = "#0275d8"; //some visual feedback that a solution was reached - blue              
+                document.getElementById("guess" + i).style.color = "#0275d8"; //bootstrap blue
             }
             updateErrorsToSolve(reason);
             updateTimeToSolve(reason);
             break;
-        case "upgrade": //we generate a new solution when upgrading. Guess to yellow instead of blue; clear time-to-solve
-            for (let i = 0; i < data.solution.length; i++) {
-                data.lock[i] = 0; //we need to clear the lock array! Very important, or can't create new locks
-                data.solution[i] = returnRandomInteger(data.solutionFloor, data.solutionCeiling);
-                document.getElementById("sol" + i).innerHTML = data.solution[i];
-                document.getElementById("guess" + i).style.color = "#f0ad4e"; //warning colour
-            }
-            break;
     }
 }
 
-//Functions related to various upgrades
+// ----------------------------------------- #upgrades ----------------------------------------------------------------------------------------------
+
+//Functions related to #crit
 
 function rollForCrit(critchance) //critchance should be a % value
 {
     let roll = returnRandomInteger(0, 100);
     
-    if (roll > critchance)
+    if (roll <= critchance)
     {
         return true;
     }
@@ -150,7 +146,7 @@ function rollForCrit(critchance) //critchance should be a % value
     }
 }
 
-// Functions related to nodes --------------------------------------------------------------------------------------------------------------------------------------
+// Functions related to #nodes --------------------------------------------------------------------------------------------------------------------------------------
 
 function gainNodeProgress()
 {
@@ -183,17 +179,21 @@ function levelUpNode()
     document.getElementById("nodecount").innerHTML = data.totalNodes;
 }
 
-// Functions related to upgrading solution length ---------------------------------------------------------------------------
+// Functions related to upgrading #solution #length #floor #ceiling ---------------------------------------------------------------------------
+
+function upgrade() //upgrades both solution length & ceiling if they're both under <10
+{
+    if (data.solutionCeiling < 9 && data.solution.length < 10) { //upgrade logic
+        upgradeSolutionLength();
+        upgradeSolutionCeiling();    
+    }
+}
 
 function upgradeSolutionLength()
 {
-    if (data.solutionSolved >= 10) {
-        data.solutionSolved = data.solutionSolved - 10;
-
-        extendArrays(); //extend the length of the arrays (+ will run the HTML update)
-        generateSolution("upgrade");
-        clearStatistics();
-    }    
+    extendArrays(); //extend the length of the arrays (+ will run the HTML update)
+    generateSolution("upgrade");
+    clearStatistics("upgrade");  
 }
 
 function extendArrays() //used when increasing the solution length
@@ -215,30 +215,25 @@ function extendArrays() //used when increasing the solution length
     document.getElementById("guessdiv").appendChild(_newGuessElement);
 }
 
-// Functions related to upgrading solution floor + ceiling --------------------------------------------------------------------------------------------------
-
 function upgradeSolutionCeiling()
 {
-    if (data.solutionSolved >= 10) {
-        data.solutionSolved = data.solutionSolved - 10;
-
-        data.solutionCeiling++;
-        clearStatistics();
-        generateSolution("upgrade"); //generate a fresh solution using the new ceiling
-    }    
+    data.solutionCeiling++;
+    generateSolution("upgrade"); //generate a fresh solution using the new ceiling
+    clearStatistics("upgrade");
 }
 
-//Functions related to Statistics---------------------------------------------------------------------------------------------------------------------
+//Functions related to #statistics---------------------------------------------------------------------------------------------------------------------
 
 function updateTimeToSolve(reason) //function to update the time-related statistics
 {
     switch (reason)
     {
         case "solved": //if we solved
+        case "upgrade": //behaviour currently the same in-case of an upgrade
+            document.getElementById("timetosolveprevious").innerHTML = data.timeToSolve[1]; //update first because updateMean will clear it
+            document.getElementById("ticktosolveprevious").innerHTML = data.tickToSolve[1];
             updateMean("time"); //if we solved, then need to update previous time [1] with current [0] + reset the current time [0] + shift all previous times right
             updateMean("tick"); //as above, but for ticks
-            document.getElementById("timetosolveprevious").innerHTML = data.timeToSolve[1];
-            document.getElementById("ticktosolveprevious").innerHTML = data.tickToSolve[1];
             break;
         case "tick": //whenever we tick, we need to update the current time [0]
             data.timeToSolve[0] = data.timeToSolve[0] + (data.tickSpeed / 1000); //to get result in seconds, not ms
@@ -262,8 +257,9 @@ function updateErrorsToSolve(reason) //functions mostly the same as above
     switch (reason)
     {
         case "solved":
-            updateMean("error");
-            document.getElementById("errorstosolveprevious").innerHTML = data.errorsToSolve[1];
+        case "upgrade":
+            document.getElementById("errorstosolveprevious").innerHTML = data.errorsToSolve[1]; //update first because updateMean will clear it
+            updateMean("error");  
             break;
         case "tick":
             data.errorsToSolve[0] = data.errorsToSolve[0] + 1; //NEEDS TO BE UPDATED *************************
@@ -333,27 +329,38 @@ function updateMean(type) //function to shift all the numbers in the array to th
     }
 }
 
-function clearStatistics() //clears all previous statistical values (but leaves current ones alone)
+function clearStatistics(reason) //clears all previous statistical values (but leaves current ones alone)
 {
-    //start at i = 1 to avoid clearing 0 (current value
-    for (let i = 1; i < data.timeToSolve.length; i++) {
-        data.timeToSolve[i] = 0;
-    }
-    data.timeMean = 0;
-    for (let i = 1; i < data.tickToSolve.length; i++) {
-        data.tickToSolve[i] = 0;
-    }
-    data.tickMean = 0;
-    for (let i = 1; i < data.errorsToSolve.length; i++) {
-        data.errorsToSolve[i] = 0;
-    }
-    data.errorMean = 0;
+    switch (reason)
+    {
+        case "clear": //when player wants to clear the stored solve values
+            //start at i = 1 to avoid clearing 0 (current value
+            for (let i = 1; i < data.timeToSolve.length; i++) {
+                data.timeToSolve[i] = 0;
+            }
+            data.timeMean = 0;
+            for (let i = 1; i < data.tickToSolve.length; i++) {
+                data.tickToSolve[i] = 0;
+            }
+            data.tickMean = 0;
+            for (let i = 1; i < data.errorsToSolve.length; i++) {
+                data.errorsToSolve[i] = 0;
+            }
+            data.errorMean = 0;
 
-    updateTimeToSolve("clear");
-    updateErrorsToSolve("clear");
+            updateTimeToSolve("clear");
+            updateErrorsToSolve("clear");
+            break;
+        case "upgrade": //restart the current timers
+            data.timeToSolve[0] = 0;
+            data.tickToSolve[0] = 0;
+            data.errorsToSolve[0] = 0;
+            break;
+    }
+    
 }
 
-//DEV FUNCTIONS --------------------------------------------------------------------------------------------------
+//#DEV FUNCTIONS --------------------------------------------------------------------------------------------------
 
 function enableDev()
 {
@@ -388,8 +395,47 @@ function devAddNodeXP()
     data.nodeXP = data.nodeXPToLevel - 3;
 }
 
-//MISC FUNCTIONS --------------------------------------------------------------------------------------------------
+//#MISC FUNCTIONS --------------------------------------------------------------------------------------------------
 
-function returnRandomInteger(min, max) { //returns a random integer, min & max included
+function returnRandomInteger(min, max) //returns a random integer, min & max included
+{ 
     return Math.floor(Math.random() * (max - min + 1) ) + min;
+}
+
+function returnWeighedGuessInteger(solutionValue) //uses global values to weight the return value
+{ 
+    if (data.accuracy > 0) {
+        
+        if (data.solutionCeiling - data.accuracy >= solutionValue) { //if we can take off enough from the ceiling, do so
+            return returnRandomInteger(data.solutionFloor, data.solutionCeiling - data.accuracy);
+        }
+        else if (data.solutionFloor + data.accuracy <= solutionValue) { //if we couldn't take from the ceiling, add to the floor
+            return returnRandomInteger(data.solutionFloor + data.accuracy, data.solutionCeiling)
+        }
+        else { //if we couldn't do either of those things, we need to split accuracy between floor & ceiling
+            if (data.solutionCeiling - data.accuracy < solutionValue) { //if we can't take enough off the top, then
+                let _difference = data.solutionCeiling - data.accuracy; //calculate the difference - Math.abs to convert it into a positive int
+                //console.log(data.accuracy);
+                //console.log ("First block:" + _difference);
+                if (data.solutionFloor + _difference <= solutionValue) { //********** redundant ?
+                    return returnRandomInteger(data.solutionFloor + _difference, solutionValue);
+                }
+            }
+            else if (data.solutionFloor + data.accuracy > solutionValue) { //if we couldn't take enough off the top, then bottom, then try the other way, starting with the floor instead
+                let _difference = data.solutionFloor + data.accuracy; //calculate the difference
+                //console.log ("Second block:" + _difference);
+                if (data.solutionCeiling - _difference >= solutionValue) {
+                    return returnRandomInteger(solutionValue, data.solutionCeiling - _difference);
+                }
+            }
+            else { //if neither criteria is met, then accuracy is 100%, go ahead and return the solutionvalue
+                //console.log ("Third block");
+                return solutionValue;
+            }
+        }
+    }
+
+    else { //if weight values are 0, then return a random value
+        return returnRandomInteger(data.solutionFloor, data.solutionCeiling);
+    }
 }
