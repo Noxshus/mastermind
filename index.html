@@ -15,6 +15,7 @@
                     <div>SOLVED: <span id="solvedsolution">0<span></div>
                     <div>ERROR: <span id="errorguess">0</span></div>
                     <div>ACCURACY: <span id="accuracy">0</span></div>
+                    <div>LOCKING: <span id="lockchance">0</span></div>
                 </div>
             </div>
             <div class="centercolumn aligncenter">
@@ -22,14 +23,12 @@
                 <div id="solutiondiv">
                     <span id="sol0">0</span>
                     <span id="sol1">0</span>          
-                    <span id="sol2">0</span>
-                    <span id="sol3">0</span></div><!--having the div here prevents adding a whitespace on appendchild-->
+                    <span id="sol2">0</span></div><!--having the div here prevents adding a whitespace on appendchild-->
                 <div>GUESS</div>
                 <div id="guessdiv">
                     <span id="guess0">0</span>
                     <span id="guess1">0</span>          
-                    <span id="guess2">0</span>
-                    <span id="guess3">0</span></div>
+                    <span id="guess2">0</span></div>
             </div>
             <div class="rightcolumn aligncenter">
                 <div>NODE CONSTRUCTION</div>
@@ -71,6 +70,8 @@
             <div class="centercolumn aligncenter">
                 <button id="guessbutton" type="button" onclick="guessLoop()">Initiate Guess Loop</button>
                 <button id="guessbuttondisable" type="button" disabled onclick="guessLoopDisable()">Disable Guess Loop</button>
+                <br>
+                <button id="lockbutton" type="button" onclick="upgradeLocking()">Upgrade Locking</button>
             </div> 
             <div class="rightcolumn"></div>
         </div>

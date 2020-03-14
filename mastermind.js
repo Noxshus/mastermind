@@ -1,25 +1,26 @@
 let devTools = 1;
 
 var data = {
-    guess: [0, 0, 0, 0],
-    solution: [0, 0, 0, 0],
+    guess: Array(3).fill(0),
+    solution: Array(3).fill(0),
     accuracy: 0,
-    lock: [0, 0, 0, 0],
-    solutionCeiling: 4, //the max value a solution integer can have
+    solutionCeiling: 3, //the max value a solution integer can have
     solutionFloor: 0, //the min value a solution integer can have
-    errorGuess: 0,
-    solutionSolved: 0,
+    errorGuess: 0, //currency
+    solutionSolved: 0, //currency
     tickSpeed: 1000, //ms
-    flag: Array(5).fill(0), //not supported on IE
-    timeToSolve: [0, 0, 0, 0],
-    tickToSolve: [0, 0, 0, 0],
+    timeToSolve: [0, 0, 0, 0], //contains the time it took to solve
+    tickToSolve: [0, 0, 0, 0], //contains the number of ticks that pass to solve
     errorsToSolve: [0, 0, 0, 0], //contains a count of the number of errors generated per solve
     timeMean: 0, //storage for mean values
-    tickMean: 0,
-    errorMean: 0,
+    tickMean: 0, //^
+    errorMean: 0, //^
     nodeXP: 0, //holds xp towards a node
     nodeXPToLevel: 100, //node XP required to level up and gain a new node
-    totalNodes: 0,
+    totalNodes: 0, //total number of nodes
+    flag: Array(5).fill(0), //not supported on IE
+    lockChance: 0,
+    lock: Array(3).fill(false),
 };
 
 window.onload = function() {
@@ -43,11 +44,7 @@ window.onload = function() {
 let updateLoop = setInterval(update, 1000); //seperate to everything else, we run checks to see if stuff needs to be unlocked. Seperated from the guessLoop so that we don't spam checks needlessly
 
 function update() {
-    if (data.solutionSolved >= 10) //reveal solution length button after solving 10 codes
-    {
-        document.getElementById("solutionlengthbutton").style.display = "inline";
-        document.getElementById("solutionceilingbutton").style.display = "inline";
-    }
+
 }
 
 function guessLoop() { //begin the guess loop
@@ -64,22 +61,21 @@ function guessLoopDisable() { //disable the loop
 
 function guess() { //principle solution guessing function
     for (let i = 0; i < data.solution.length; i++) { //attempt a guess
-        data.guess[i] = returnWeighedGuessInteger(data.solution[i]);
-        document.getElementById("guess" + i).innerHTML = data.guess[i];
+        if (data.lock[i] == false) {
+            data.guess[i] = returnWeighedGuessInteger(data.solution[i]);
+            document.getElementById("guess" + i).innerHTML = data.guess[i];
+        }
     }
 
     const _correctGuessCount = compare();
 
     if (_correctGuessCount == data.solution.length) { //guess matched the solution
-        data.solutionSolved++; // NEEDS TO BE UPDATED *******************************
-        updateTimeToSolve("tick"); //process time statistics because we still needed a tick to get here
-        gainNodeProgress(); //gain progress towards building a node
-
-        data.accuracy = 0; //reset accuracy value
-
-        upgrade();
-        
-        document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
+        if (upgradeSolution() == true) {
+            solved("upgrade");
+        }
+        else {
+            solved("solved");
+        }
     }
     else { //solution not reached, generates error(s) & need to check if we need to increase accuracy value
         updateErrorsToSolve("tick"); //we only update errors-to-solve on a tick and not on a solution because otherwise we get one extra tick of errors
@@ -96,14 +92,21 @@ function guess() { //principle solution guessing function
     }
 }
 
-function compare() //compare the solution & guess arrays, returns the number of correct guesses
+function compare() //compare the solution & guess arrays, returns the number of correct guesses. Runs locking to see if any of them lock
 {
     let _correctGuessCount = 0; //reset correct guess count at the start of the loop
 
     for (let i = 0; i < data.solution.length; i++) {
         if (data.guess[i] == data.solution[i]) {
             _correctGuessCount++;
-            document.getElementById("guess" + i).style.color = "#5bc0de"; //light blue
+            if (data.lock[i] == false && rollForCrit(data.lockChance) == true) //if number isn't already locked, roll for a chance to lock it
+            {
+                data.lock[i] = true;
+                document.getElementById("guess" + i).style.color = "#5cb85c" ; //green
+            }
+            else if (data.lock[i] == false) {
+                document.getElementById("guess" + i).style.color = "#5bc0de"; //light blue
+            }
         } 
         else if (data.guess[i] != data.solution[i]) {           
             document.getElementById("guess" + i).style.color = "#d9534f"; //red
@@ -120,6 +123,8 @@ function generateSolution(reason) //used to create a new solution after solving 
         case "upgrade":
             for (let i = 0; i < data.solution.length; i++) {
                 data.solution[i] = returnRandomInteger(data.solutionFloor, data.solutionCeiling);
+                data.accuracy = 0; //reset accuracy value
+                data.lock[i] = false; //reset the locks array
                 document.getElementById("sol" + i).innerHTML = data.solution[i];
                 document.getElementById("guess" + i).style.color = "#0275d8"; //bootstrap blue
             }
@@ -129,13 +134,27 @@ function generateSolution(reason) //used to create a new solution after solving 
     }
 }
 
+function solved(reason) //compilation of logic when a solution has been solved
+{
+    switch (reason) {
+        case "upgrade":
+        case "solved":
+            data.solutionSolved++; // NEEDS TO BE UPDATED *******************************
+            updateTimeToSolve("tick"); //process time statistics because we still needed a tick to get here
+            gainNodeProgress(); //gain progress towards building a node
+            document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
+            generateSolution(reason);
+            break;
+    }
+}
+
 // ----------------------------------------- #upgrades ----------------------------------------------------------------------------------------------
 
-//Functions related to #crit
+//Functions related to #chance
 
 function rollForCrit(critchance) //critchance should be a % value
 {
-    let roll = returnRandomInteger(0, 100);
+    const roll = returnRandomNumberWithDecimals(0, 100, 2);
     
     if (roll <= critchance)
     {
@@ -181,18 +200,20 @@ function levelUpNode()
 
 // Functions related to upgrading #solution #length #floor #ceiling ---------------------------------------------------------------------------
 
-function upgrade() //upgrades both solution length & ceiling if they're both under <10
+function upgradeSolution() //upgrades both solution length & ceiling if they're both under <10
 {
     if (data.solutionCeiling < 9 && data.solution.length < 10) { //upgrade logic
         upgradeSolutionLength();
-        upgradeSolutionCeiling();    
+        upgradeSolutionCeiling();
+        return true;
     }
+
+    return false;
 }
 
 function upgradeSolutionLength()
 {
     extendArrays(); //extend the length of the arrays (+ will run the HTML update)
-    generateSolution("upgrade");
     clearStatistics("upgrade");  
 }
 
@@ -200,7 +221,7 @@ function extendArrays() //used when increasing the solution length
 {
     data.solution.push(0);
     data.guess.push(0);
-    data.lock.push(0); //should default to unlocked - guess loop will lock it if it's already correct
+    data.lock.push(false);
 
     //update the HTML after extending the arrays
     let _newSolutionElement = document.createElement("span"); 
@@ -218,8 +239,15 @@ function extendArrays() //used when increasing the solution length
 function upgradeSolutionCeiling()
 {
     data.solutionCeiling++;
-    generateSolution("upgrade"); //generate a fresh solution using the new ceiling
     clearStatistics("upgrade");
+}
+
+// Functions related to #locking
+
+function upgradeLocking()
+{
+    data.lockChance++;
+    document.getElementById("lockchance").innerHTML = data.lockChance;
 }
 
 //Functions related to #statistics---------------------------------------------------------------------------------------------------------------------
@@ -400,6 +428,12 @@ function devAddNodeXP()
 function returnRandomInteger(min, max) //returns a random integer, min & max included
 { 
     return Math.floor(Math.random() * (max - min + 1) ) + min;
+}
+
+function returnRandomNumberWithDecimals(min, max, decimalPlaces) { //https://stackoverflow.com/questions/45735472/generate-a-random-number-between-2-values-to-2-decimals-places-in-javascript
+    const rand = Math.random() < 0.5 ? ((1-Math.random()) * (max-min) + min) : (Math.random() * (max-min) + min);  // could be min or max or anything in between
+    const power = Math.pow(10, decimalPlaces);
+    return Math.floor(rand * power) / power;
 }
 
 function returnWeighedGuessInteger(solutionValue) //uses global values to weight the return value
