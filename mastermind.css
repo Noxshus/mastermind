@@ -44,6 +44,10 @@ body { /*undoing defaults*/
     float: center;
 }
 
+.nofloat {
+    float: none;
+}
+
 .paddingleft { /*amount of padding usually associated with the body*/
     padding-left: 8px;
 }
@@ -52,7 +56,44 @@ body { /*undoing defaults*/
     padding-right: 8px;
 }
 
-.progressbar { /*the black bar, which will be filled by #nodeprogress*/
+.paddingbottom {
+    padding-bottom: 8px;
+}
+
+.nopadding {
+    padding: 0px;
+}
+
+.paddingleftright {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.smallbutton {
+    width: 18px;
+    height: 18px;
+    margin: 0px;
+    padding: 0px;
+    line-height: 0; /*removes default transformation of text, the space above the text*/
+    font-family: Arial, Helvetica, sans-serif
+}
+
+.progressbar {
+    height: 5px;
+    background-color: #292b2c;
+    position: relative; /*if we use absolute, the block won't stretch to fill the space*/
+    z-index: 0;
+}
+
+.progress {
+    width: 0%;
+    height: 5px;
+    background-color: #0275d8;
+    position: absolute;
+    z-index: 1;
+}
+
+#nodeprogressbar { /*the black bar, which will be filled by #nodeprogress*/
     height: 20px;
     background-color: #292b2c;
     padding: 1px; /*tiny gap so it can act as an 'outline' to the #nodeprogress*/

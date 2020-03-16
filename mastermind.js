@@ -3,7 +3,8 @@ let devTools = 1;
 var data = {
     guess: Array(3).fill(0),
     solution: Array(3).fill(0),
-    accuracy: 0,
+    accuracy: Array(3).fill(0),
+    lock: Array(3).fill(false),
     solutionCeiling: 3, //the max value a solution integer can have
     solutionFloor: 0, //the min value a solution integer can have
     errorGuess: 0, //currency
@@ -18,9 +19,12 @@ var data = {
     nodeXP: 0, //holds xp towards a node
     nodeXPToLevel: 100, //node XP required to level up and gain a new node
     totalNodes: 0, //total number of nodes
-    flag: Array(5).fill(0), //not supported on IE
+    nodeAssignments: Array(2).fill(0), //0: accuracy, 1: locking
+    skill: Array(2).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
+    skillXP: Array(2).fill(0), //0: accuracy, 1: locking
+    skillXPToLevel: Array(2).fill(100),
+    flag: Array(5).fill(0),
     lockChance: 0,
-    lock: Array(3).fill(false),
 };
 
 window.onload = function() {
@@ -62,12 +66,12 @@ function guessLoopDisable() { //disable the loop
 function guess() { //principle solution guessing function
     for (let i = 0; i < data.solution.length; i++) { //attempt a guess
         if (data.lock[i] == false) {
-            data.guess[i] = returnWeighedGuessInteger(data.solution[i]);
+            data.guess[i] = returnWeighedGuessInteger(data.solution[i], data.accuracy[i]);
             document.getElementById("guess" + i).innerHTML = data.guess[i];
         }
     }
 
-    const _correctGuessCount = compare();
+    const _correctGuessCount = compare(); //runs a number of functions related to comparision, including any crits
 
     if (_correctGuessCount == data.solution.length) { //guess matched the solution
         if (upgradeSolution() == true) {
@@ -77,38 +81,43 @@ function guess() { //principle solution guessing function
             solved("solved");
         }
     }
-    else { //solution not reached, generates error(s) & need to check if we need to increase accuracy value
+    else { //solution not reached, generates error(s)
         updateErrorsToSolve("tick"); //we only update errors-to-solve on a tick and not on a solution because otherwise we get one extra tick of errors
         updateTimeToSolve("tick");
         data.errorGuess++; // NEEDS TO BE UPDATED *******************************
-
-        if (data.accuracy < _correctGuessCount) //increase accuracy if we're getting closer to the solution
-        {
-            data.accuracy = _correctGuessCount;
-            document.getElementById("accuracy").innerHTML = data.accuracy;
-        }
-
         document.getElementById("errorguess").innerHTML = data.errorGuess;
     }
+
+    let _console = "acc:";
+
+    for (let i = 0; i < data.solution.length; i++) {
+        _console = _console + " " + data.accuracy[i];
+    }
+
+    console.log(_console);
 }
 
-function compare() //compare the solution & guess arrays, returns the number of correct guesses. Runs locking to see if any of them lock
+function compare() //compare the solution & guess arrays, returns the number of correct guesses. Runs locking to see if any of them lock + checks for accuracy increase
 {
     let _correctGuessCount = 0; //reset correct guess count at the start of the loop
 
     for (let i = 0; i < data.solution.length; i++) {
-        if (data.guess[i] == data.solution[i]) {
+        if (data.guess[i] == data.solution[i]) { //correct guess
             _correctGuessCount++;
-            if (data.lock[i] == false && rollForCrit(data.lockChance) == true) //if number isn't already locked, roll for a chance to lock it
-            {
+
+            if (data.lock[i] == false && rollForCrit(data.lockChance) == true) { //if number isn't already locked, roll for a chance to lock it
                 data.lock[i] = true;
                 document.getElementById("guess" + i).style.color = "#5cb85c" ; //green
             }
             else if (data.lock[i] == false) {
+                increaseAccuracy("correct", data.skill[0], i); //add accuracy when guessing correctly
                 document.getElementById("guess" + i).style.color = "#5bc0de"; //light blue
             }
         } 
-        else if (data.guess[i] != data.solution[i]) {           
+        else if (data.guess[i] != data.solution[i]) { //incorrect guess
+            if (data.accuracy[i] < data.solutionCeiling) { //increase accuracy for a incorrect guess, with a % chance
+                increaseAccuracy("incorrect", data.skill[0], i);
+            }   
             document.getElementById("guess" + i).style.color = "#d9534f"; //red
         }
     }
@@ -123,7 +132,7 @@ function generateSolution(reason) //used to create a new solution after solving 
         case "upgrade":
             for (let i = 0; i < data.solution.length; i++) {
                 data.solution[i] = returnRandomInteger(data.solutionFloor, data.solutionCeiling);
-                data.accuracy = 0; //reset accuracy value
+                data.accuracy[i] = 0; //reset accuracy value
                 data.lock[i] = false; //reset the locks array
                 document.getElementById("sol" + i).innerHTML = data.solution[i];
                 document.getElementById("guess" + i).style.color = "#0275d8"; //bootstrap blue
@@ -149,19 +158,33 @@ function solved(reason) //compilation of logic when a solution has been solved
 }
 
 // ----------------------------------------- #upgrades ----------------------------------------------------------------------------------------------
-
 //Functions related to #chance
 
-function rollForCrit(critchance) //critchance should be a % value
+function rollForCrit(critChance) //critchance should be a % value, up to 2 decimals
 {
     const roll = returnRandomNumberWithDecimals(0, 100, 2);
     
-    if (roll <= critchance)
-    {
+    if (roll < critChance) { //we use < only and not =< to prevent a scenario where even a value of 0 is considered a crit
         return true;
     }
     else {
         return false;
+    }
+}
+
+function increaseAccuracy(reason, chance, accuracyElement) //logic behind increasing accuracy (or not)
+{
+    if (data.accuracy[accuracyElement] < data.solutionCeiling) {
+        switch (reason) {
+            case "correct": //correct guess
+                data.accuracy[accuracyElement]++;
+                break;
+            case "incorrect": //incorrect guess
+                if (rollForCrit(chance) == true) {
+                    data.accuracy[accuracyElement]++;
+                }
+                break;
+        }
     }
 }
 
@@ -173,10 +196,11 @@ function gainNodeProgress()
 
     data.nodeXP++; // NEEDS TO BE UPDATED *******************************
 
-    if (data.nodeXP >= data.nodeXPToLevel) //if incrementing xp right now caused us to level up, then do so (to )
-    {
+    if (data.nodeXP >= data.nodeXPToLevel) { //if incrementing xp right now caused us to level up, then do so
         levelUpNode();
     }
+
+    gainAssignedNodeProgress();
 
     _nodePercent = (data.nodeXP / data.nodeXPToLevel) * 100;
     document.getElementById("nodeprogress").style.width = _nodePercent + "%";
@@ -188,14 +212,77 @@ function gainNodeProgress()
     document.getElementById("nodeprogresstext").innerHTML = _nodePercent + "%";
 }
 
+function gainAssignedNodeProgress()
+{
+    for (let i = 0; i < data.nodeAssignments.length; i++) {
+        if (data.nodeAssignments[i] > 0) {
+            data.skillXP[i] = data.skillXP[i] + data.nodeAssignments[i];
+            document.getElementById(returnSkillNameOrNumber(i) + "progress").style.width = data.skillXP[i] + "%";
+        }
+
+        if (data.skillXP[i] >= data.skillXPToLevel[i]) {
+            levelUpAssignedNode(i);
+        }
+    }
+}
+
 function levelUpNode()
 {
     data.totalNodes++;
     data.nodeXP = data.nodeXP - data.nodeXPToLevel; //so we can keep any overflow to the next level
     data.nodeXPToLevel = data.nodeXPToLevel * 2; // NEEDS TO BE UPDATED --- PROGRESSION
-    _nodePercent = (data.nodeXP / data.nodeXPToLevel) * 100;
     document.getElementById("nodexptolevel").innerHTML = data.nodeXPToLevel;
-    document.getElementById("nodecount").innerHTML = data.totalNodes;
+    document.getElementById("totalnodes").innerHTML = data.totalNodes;
+}
+
+function levelUpAssignedNode(skill) //similar to levelling a node
+{
+    data.skill[skill]++; // NEEDS TO BE UPDATED - this will be a % value
+    data.skillXP[skill] = data.skillXP[skill] - data.skillXPToLevel[skill];
+    data.skillXPToLevel[skill] = data.skillXPToLevel[skill] * 2; // NEEDS TO BE UPDATED --- PROGRESSION
+    const _percent = (data.skillXP / data.skillXPToLevel) * 100;
+    document.getElementById(returnSkillNameOrNumber(skill) + "progress").style.width = _percent + "%";
+    document.getElementById(returnSkillNameOrNumber(skill) + "chance").innerHTML = data.skill[skill] + "%";
+}
+
+function assignNode(skill, add)
+{
+    const _skill = returnSkillNameOrNumber(skill);
+
+    if (add == true) {    
+        if (data.totalNodes >= 1) {
+            data.totalNodes--;
+            data.nodeAssignments[_skill]++;
+        }
+    }
+    else if (add == false) {
+        if (data.nodeAssignments[_skill] >= 1) {
+            data.totalNodes++;
+            data.nodeAssignments[_skill]--;
+        }
+    }
+
+    document.getElementById("totalnodes").innerHTML = data.totalNodes;
+    document.getElementById(skill + "nodes").innerHTML = data.nodeAssignments[_skill];
+}
+
+function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the name, it returns the number, if i give it the number, it returns the name
+    if (Number.isInteger(skill) == true) {
+        switch (skill) {
+            case 0:
+                return "accuracy";
+            case 1:
+                return "locking";
+        }
+    }
+    else {
+        switch (skill) {
+            case "accuracy":
+                return 0;
+            case "locking":
+                return 1;
+        }
+    }
 }
 
 // Functions related to upgrading #solution #length #floor #ceiling ---------------------------------------------------------------------------
@@ -221,6 +308,7 @@ function extendArrays() //used when increasing the solution length
 {
     data.solution.push(0);
     data.guess.push(0);
+    data.accuracy.push(0);
     data.lock.push(false);
 
     //update the HTML after extending the arrays
@@ -423,6 +511,16 @@ function devAddNodeXP()
     data.nodeXP = data.nodeXPToLevel - 3;
 }
 
+function devAddNodes()
+{
+    data.totalNodes = data.totalNodes + 10;
+}
+
+function devAddAcc()
+{
+    data.skill[0] = data.skill[0] + 10;
+}
+
 //#MISC FUNCTIONS --------------------------------------------------------------------------------------------------
 
 function returnRandomInteger(min, max) //returns a random integer, min & max included
@@ -436,40 +534,42 @@ function returnRandomNumberWithDecimals(min, max, decimalPlaces) { //https://sta
     return Math.floor(rand * power) / power;
 }
 
-function returnWeighedGuessInteger(solutionValue) //uses global values to weight the return value
+function returnWeighedGuessInteger(solutionValue, accuracy) //uses global values to weight the return value
 { 
-    if (data.accuracy > 0) {
+    if (accuracy > 0) {
         
-        if (data.solutionCeiling - data.accuracy >= solutionValue) { //if we can take off enough from the ceiling, do so
-            return returnRandomInteger(data.solutionFloor, data.solutionCeiling - data.accuracy);
+        if (accuracy >= data.solutionCeiling) //if accuracy has exceeded solutionCeiling, then we can skip everything and return the solutionvalue
+        {
+            return solutionValue;
         }
-        else if (data.solutionFloor + data.accuracy <= solutionValue) { //if we couldn't take from the ceiling, add to the floor
-            return returnRandomInteger(data.solutionFloor + data.accuracy, data.solutionCeiling)
+
+        if (data.solutionCeiling - accuracy >= solutionValue) { //if we can take off enough from the ceiling, do so
+            return returnRandomInteger(data.solutionFloor, data.solutionCeiling - accuracy);
+        }
+        else if (data.solutionFloor + accuracy <= solutionValue) { //if we couldn't take from the ceiling, add to the floor
+            return returnRandomInteger(data.solutionFloor + accuracy, data.solutionCeiling)
         }
         else { //if we couldn't do either of those things, we need to split accuracy between floor & ceiling
-            if (data.solutionCeiling - data.accuracy < solutionValue) { //if we can't take enough off the top, then
-                let _difference = data.solutionCeiling - data.accuracy; //calculate the difference - Math.abs to convert it into a positive int
-                //console.log(data.accuracy);
-                //console.log ("First block:" + _difference);
+            if (data.solutionCeiling - accuracy < solutionValue) { //if we can't take enough off the top, then
+                let _difference = data.solutionCeiling - accuracy; //calculate the difference - Math.abs to convert it into a positive int
                 if (data.solutionFloor + _difference <= solutionValue) { //********** redundant ?
                     return returnRandomInteger(data.solutionFloor + _difference, solutionValue);
                 }
             }
-            else if (data.solutionFloor + data.accuracy > solutionValue) { //if we couldn't take enough off the top, then bottom, then try the other way, starting with the floor instead
-                let _difference = data.solutionFloor + data.accuracy; //calculate the difference
-                //console.log ("Second block:" + _difference);
+            else if (data.solutionFloor + accuracy > solutionValue) { //if we couldn't take enough off the top, then bottom, then try the other way, starting with the floor instead
+                let _difference = data.solutionFloor + accuracy; //calculate the difference
                 if (data.solutionCeiling - _difference >= solutionValue) {
                     return returnRandomInteger(solutionValue, data.solutionCeiling - _difference);
                 }
             }
-            else { //if neither criteria is met, then accuracy is 100%, go ahead and return the solutionvalue
-                //console.log ("Third block");
+            else { //shouldn't be possible to reach here
+                console.log("Shouldn't be possible to get here: err1");
                 return solutionValue;
             }
         }
     }
 
-    else { //if weight values are 0, then return a random value
+    else { //if accuracy is 0, then return a random value
         return returnRandomInteger(data.solutionFloor, data.solutionCeiling);
     }
 }

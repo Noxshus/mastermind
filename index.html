@@ -10,13 +10,10 @@
     <div class="header">PUT LINKS HERE - NOXSHUS</div> 
     <body>
         <div class="flexbox">
-            <div class="leftcolumn">
-                <div class="paddingleft">
-                    <div>SOLVED: <span id="solvedsolution">0<span></div>
+            <div class="leftcolumn aligncenter">
+                <div>SOLVED: <span id="solvedsolution">0<span></div>
                     <div>ERROR: <span id="errorguess">0</span></div>
-                    <div>ACCURACY: <span id="accuracy">0</span></div>
-                    <div>LOCKING: <span id="lockchance">0</span></div>
-                </div>
+                    <div>LOCKING: <span id="lockchance">0</span></div>              
             </div>
             <div class="centercolumn aligncenter">
                 <div>SOLUTION</div>
@@ -33,13 +30,13 @@
             <div class="rightcolumn aligncenter">
                 <div>NODE CONSTRUCTION</div>
                 <div class="paddingright paddingleft">
-                    <div class="progressbar">                      
+                    <div id="nodeprogressbar">                      
                         <div id="nodeprogress"></div>
                         <div id="nodeprogresstext">0%</div>                       
                     </div>
+                    <div><span id="nodexp">0</span> / <span id="nodexptolevel">0</span></div>
+                    <div>NODES AVAILABLE: <span id="totalnodes">0</span></div>
                 </div>
-                <div><span id="nodexp">0</span> / <span id="nodexptolevel">0</span></div>
-                <div>NODES AVAILABLE: <span id="nodecount">0</span></div>
             </div>
         </div>
         <hr>
@@ -73,13 +70,45 @@
                 <br>
                 <button id="lockbutton" type="button" onclick="upgradeLocking()">Upgrade Locking</button>
             </div> 
-            <div class="rightcolumn"></div>
+            <div class="rightcolumn">
+                <div class="paddingright paddingleft">
+                    <div class="paddingbottom">
+                        <span>Accuracy Bonus: <span id="accuracychance">0%</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', false)">-</button>
+                        <span class="floatright paddingleftright"><span id="accuracynodes">0</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', true)">+</button>
+                        <div class="progressbar">                      
+                            <div id="accuracyprogress" class="progress"></div>                    
+                        </div>
+                    </div>
+                    <div class="paddingbottom">
+                        <span>Locking Bonus: <span id="lockingbonus">0%</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="">-</button>
+                        <span class="floatright paddingleftright"><span id="lockingnodes">0</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="">+</button>
+                        <div class="progressbar">                      
+                            <div id="lockingprogress" class="progress"></div>                    
+                        </div>
+                    </div>
+                    <div class="paddingbottom">
+                        <span>Critical Guess Bonus: <span id="critguess">0%</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="">-</button>
+                        <span class="floatright paddingleftright"><span id="critguessnodes">0</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="">+</button>
+                        <div class="progressbar">                      
+                            <div id="criticalprogress" class="progress"></div>                    
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
             
         <button class="devtool" style="display: none;" type="button" onclick="devAddSolution()">DEV: SOLUTIONS</button>
         <button class="devtool" style="display: none;" type="button" onclick="devAddNodeXP()">DEV: NODE XP</button>
         <button class="devtool" id="solutionlengthbutton" style="display: none;" type="button" onclick="upgradeSolutionLength()">Upgrade Solution Length</button>
         <button class="devtool" id="solutionceilingbutton" style="display: none;" type="button" onclick="upgradeSolutionCeiling()">Upgrade Solution Ceiling</button>
-        <button class="devtool" style="display: none;" type="button" onclick="guess()">DEV: guess()</button>      
+        <button class="devtool" style="display: none;" type="button" onclick="guess()">DEV: guess()</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devAddNodes()">DEV: ADD NODES</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devAddAcc()">DEV: ADD ACCURACY</button>
     </body>
 </html>
