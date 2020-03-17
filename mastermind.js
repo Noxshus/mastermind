@@ -17,12 +17,13 @@ var data = {
     tickMean: 0, //^
     errorMean: 0, //^
     nodeXP: 0, //holds xp towards a node
-    nodeXPToLevel: 100, //node XP required to level up and gain a new node
+    nodeXPToLevel: 10, //node XP required to level up and gain a new node
     totalNodes: 0, //total number of nodes
     nodeAssignments: Array(2).fill(0), //0: accuracy, 1: locking
     skill: Array(2).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
     skillXP: Array(2).fill(0), //0: accuracy, 1: locking
-    skillXPToLevel: Array(2).fill(100),
+    skillXPToLevel: Array(2).fill(10),
+    upgradeCost: [50, 0, 0], //keeps track of how many of an upgrades of a skill have been purchased (for the purpose of costs)
     flag: Array(5).fill(0),
     lockChance: 0,
 };
@@ -88,13 +89,14 @@ function guess() { //principle solution guessing function
         document.getElementById("errorguess").innerHTML = data.errorGuess;
     }
 
-    let _console = "acc:";
+    let _acc = "";
 
-    for (let i = 0; i < data.solution.length; i++) {
-        _console = _console + " " + data.accuracy[i];
+    for(let i = 0; i < data.accuracy.length; i++) {
+        _acc += data.accuracy[i] + " ";
     }
 
-    console.log(_console);
+    document.getElementById("accuracycurrent").innerHTML = _acc;
+
 }
 
 function compare() //compare the solution & guess arrays, returns the number of correct guesses. Runs locking to see if any of them lock + checks for accuracy increase
@@ -115,7 +117,7 @@ function compare() //compare the solution & guess arrays, returns the number of 
             }
         } 
         else if (data.guess[i] != data.solution[i]) { //incorrect guess
-            if (data.accuracy[i] < data.solutionCeiling) { //increase accuracy for a incorrect guess, with a % chance
+            if (data.accuracy[i] < data.solutionCeiling && data.skill[0] > 0) { //increase accuracy for a incorrect guess, with a % chance. Accuracy must be greater than 0
                 increaseAccuracy("incorrect", data.skill[0], i);
             }   
             document.getElementById("guess" + i).style.color = "#d9534f"; //red
@@ -172,16 +174,45 @@ function rollForCrit(critChance) //critchance should be a % value, up to 2 decim
     }
 }
 
+//Functions related to #accuracy
+
+function upgradeAccuracy(type)
+{
+    switch (type) {
+        case "linear": //increase accuracy by 1%, with a superlinear scaling cost
+            if (data.errorGuess >= data.upgradeCost[0]) {
+                data.errorGuess = data.errorGuess - data.upgradeCost[0];
+                data.upgradeCost[0] = growthCurve("superlinear", data.upgradeCost[0]);
+                document.getElementById("accuracycost").innerHTML = data.upgradeCost[0];
+                data.skill[0]++;
+                document.getElementById("accuracychance").innerHTML = data.skill[0] + "%";
+            }
+            break;
+        case "correct": //one time upgrade to grant a bonus to accuracy on a correct guess
+            if (data.errorGuess >= 1000 && data.flag[0] == 0) {
+                data.errorGuess = data.errorGuess - 1000;
+                data.flag[0] = 1;
+                document.getElementById("accuracycorrectbutton").remove();
+            }
+    }
+    document.getElementById("errorguess").innerHTML = data.errorGuess;
+}
+
 function increaseAccuracy(reason, chance, accuracyElement) //logic behind increasing accuracy (or not)
 {
     if (data.accuracy[accuracyElement] < data.solutionCeiling) {
         switch (reason) {
-            case "correct": //correct guess
-                data.accuracy[accuracyElement]++;
-                break;
-            case "incorrect": //incorrect guess
-                if (rollForCrit(chance) == true) {
+            case "correct": //correct guess - double the chance to get it right
+                if (data.flag[0] && rollForCrit(chance * 2) == true)
+                {
                     data.accuracy[accuracyElement]++;
+                    console.log("Acc Increase (crit):" + data.accuracy[accuracyElement]);
+                }
+                break;
+            case "incorrect": //incorrect guess - each level of accuracy makes it more difficult to increase accuracy.
+                if (rollForCrit(chance / data.accuracy[accuracyElement]) == true) { //should never call this while accuracy is 0, or this will explode
+                    data.accuracy[accuracyElement]++;
+                    console.log("Acc Increase:" + data.accuracy[accuracyElement]);
                 }
                 break;
         }
@@ -192,8 +223,6 @@ function increaseAccuracy(reason, chance, accuracyElement) //logic behind increa
 
 function gainNodeProgress()
 {
-    let _nodePercent = 0;
-
     data.nodeXP++; // NEEDS TO BE UPDATED *******************************
 
     if (data.nodeXP >= data.nodeXPToLevel) { //if incrementing xp right now caused us to level up, then do so
@@ -202,7 +231,7 @@ function gainNodeProgress()
 
     gainAssignedNodeProgress();
 
-    _nodePercent = (data.nodeXP / data.nodeXPToLevel) * 100;
+    let _nodePercent = (data.nodeXP / data.nodeXPToLevel) * 100;
     document.getElementById("nodeprogress").style.width = _nodePercent + "%";
     document.getElementById("nodexp").innerHTML = data.nodeXP;
 
@@ -212,12 +241,14 @@ function gainNodeProgress()
     document.getElementById("nodeprogresstext").innerHTML = _nodePercent + "%";
 }
 
-function gainAssignedNodeProgress()
+function gainAssignedNodeProgress() //if a node is assigned to a skill, generate progress for them too
 {
     for (let i = 0; i < data.nodeAssignments.length; i++) {
         if (data.nodeAssignments[i] > 0) {
             data.skillXP[i] = data.skillXP[i] + data.nodeAssignments[i];
-            document.getElementById(returnSkillNameOrNumber(i) + "progress").style.width = data.skillXP[i] + "%";
+            const _percent = (data.skillXP[i] / data.skillXPToLevel[i]) * 100;
+            document.getElementById(returnSkillNameOrNumber(i) + "progress").style.width = _percent + "%";
+            document.getElementById(returnSkillNameOrNumber(i) + "progressxptooltip").innerHTML = data.skillXP[i];
         }
 
         if (data.skillXP[i] >= data.skillXPToLevel[i]) {
@@ -230,19 +261,21 @@ function levelUpNode()
 {
     data.totalNodes++;
     data.nodeXP = data.nodeXP - data.nodeXPToLevel; //so we can keep any overflow to the next level
-    data.nodeXPToLevel = data.nodeXPToLevel * 2; // NEEDS TO BE UPDATED --- PROGRESSION
+    data.nodeXPToLevel = growthCurve("superlinear", data.nodeXPToLevel);
     document.getElementById("nodexptolevel").innerHTML = data.nodeXPToLevel;
     document.getElementById("totalnodes").innerHTML = data.totalNodes;
 }
 
 function levelUpAssignedNode(skill) //similar to levelling a node
 {
-    data.skill[skill]++; // NEEDS TO BE UPDATED - this will be a % value
+    data.skill[skill]++;
     data.skillXP[skill] = data.skillXP[skill] - data.skillXPToLevel[skill];
-    data.skillXPToLevel[skill] = data.skillXPToLevel[skill] * 2; // NEEDS TO BE UPDATED --- PROGRESSION
-    const _percent = (data.skillXP / data.skillXPToLevel) * 100;
+    data.skillXPToLevel[skill] = growthCurve("superlinear", data.skillXPToLevel[skill]);
+    const _percent = (data.skillXP[skill] / data.skillXPToLevel[skill]) * 100;
     document.getElementById(returnSkillNameOrNumber(skill) + "progress").style.width = _percent + "%";
     document.getElementById(returnSkillNameOrNumber(skill) + "chance").innerHTML = data.skill[skill] + "%";
+    document.getElementById(returnSkillNameOrNumber(skill) + "progressxptooltip").innerHTML = data.skillXP[skill];
+    document.getElementById(returnSkillNameOrNumber(skill) + "progressleveltooltip").innerHTML = data.skillXPToLevel[skill];
 }
 
 function assignNode(skill, add)
@@ -264,25 +297,6 @@ function assignNode(skill, add)
 
     document.getElementById("totalnodes").innerHTML = data.totalNodes;
     document.getElementById(skill + "nodes").innerHTML = data.nodeAssignments[_skill];
-}
-
-function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the name, it returns the number, if i give it the number, it returns the name
-    if (Number.isInteger(skill) == true) {
-        switch (skill) {
-            case 0:
-                return "accuracy";
-            case 1:
-                return "locking";
-        }
-    }
-    else {
-        switch (skill) {
-            case "accuracy":
-                return 0;
-            case "locking":
-                return 1;
-        }
-    }
 }
 
 // Functions related to upgrading #solution #length #floor #ceiling ---------------------------------------------------------------------------
@@ -332,11 +346,7 @@ function upgradeSolutionCeiling()
 
 // Functions related to #locking
 
-function upgradeLocking()
-{
-    data.lockChance++;
-    document.getElementById("lockchance").innerHTML = data.lockChance;
-}
+
 
 //Functions related to #statistics---------------------------------------------------------------------------------------------------------------------
 
@@ -504,6 +514,7 @@ function enableDev()
 function devAddSolution()
 {
     data.solutionSolved = data.solutionSolved + 10;
+    document.getElementById("solutionsolved").innerHTML = data.errorGuess;
 }
 
 function devAddNodeXP()
@@ -519,6 +530,17 @@ function devAddNodes()
 function devAddAcc()
 {
     data.skill[0] = data.skill[0] + 10;
+}
+
+function devUpgradeLocking()
+{
+    data.lockChance = data.lockChance + 10;
+}
+
+function devAddErrors()
+{
+    data.errorGuess = data.errorGuess + 100;
+    document.getElementById("errorguess").innerHTML = data.errorGuess;
 }
 
 //#MISC FUNCTIONS --------------------------------------------------------------------------------------------------
@@ -571,5 +593,37 @@ function returnWeighedGuessInteger(solutionValue, accuracy) //uses global values
 
     else { //if accuracy is 0, then return a random value
         return returnRandomInteger(data.solutionFloor, data.solutionCeiling);
+    }
+}
+
+function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the name, it returns the number, if i give it the number, it returns the name
+    if (Number.isInteger(skill) == true) {
+        switch (skill) {
+            case 0:
+                return "accuracy";
+            case 1:
+                return "locking";
+        }
+    }
+    else {
+        switch (skill) {
+            case "accuracy":
+                return 0;
+            case "locking":
+                return 1;
+        }
+    }
+}
+
+function growthCurve(model, currentValue) {
+    switch (model) {
+        case "superlinear": 
+            return Math.round(Math.pow(currentValue, 1.1));
+        case "quadratic":
+            return (Math.pow(currentValue, 2)).toFixed(2);
+        case "log": //logmarithic growth, the inverse of exponentional
+            return (Math.log(currentValue)).toFixed(2);
+        case "sublinear": //slower than linear growth
+            return (Math.sqrt(currentValue)).toFixed(2);
     }
 }

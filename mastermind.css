@@ -79,11 +79,13 @@ body { /*undoing defaults*/
 }
 
 .progressbar {
+    visibility: visible;
     height: 5px;
     background-color: #292b2c;
     position: relative; /*if we use absolute, the block won't stretch to fill the space*/
     z-index: 0;
-}
+    text-align: center; /* for the tooltip! */
+  }
 
 .progress {
     width: 0%;
@@ -92,6 +94,67 @@ body { /*undoing defaults*/
     position: absolute;
     z-index: 1;
 }
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+  
+  /* Tooltip text */
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 200px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        padding: 5px;
+        border-radius: 6px;
+        font-size: 11px;
+        position: absolute;
+        z-index: 10;
+    }
+
+    .tooltip .tooltiptextsmall {
+        visibility: hidden;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        padding: 5px;
+        border-radius: 6px;
+        font-size: 11px;
+        position: absolute;
+        top: 100%; /*displace it down*/
+        z-index: 10;
+        white-space: nowrap; /*keep it all on 1 line*/
+    }
+
+    .tooltip .tooltiptextprogress {
+        visibility: hidden;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        padding: 5px;
+        border-radius: 6px;
+        font-size: 11px;
+        position: absolute;
+        z-index: 10;
+        white-space: nowrap; /*keep it all on 1 line*/
+        bottom: 100%;
+    }
+  
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+    }
+
+    .tooltip:hover .tooltiptextsmall {
+        visibility: visible;
+    }
+    
+    .progressbar:hover .tooltiptextprogress {
+        visibility: visible;
+    }
 
 #nodeprogressbar { /*the black bar, which will be filled by #nodeprogress*/
     height: 20px;

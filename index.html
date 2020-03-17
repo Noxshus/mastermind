@@ -12,8 +12,7 @@
         <div class="flexbox">
             <div class="leftcolumn aligncenter">
                 <div>SOLVED: <span id="solvedsolution">0<span></div>
-                    <div>ERROR: <span id="errorguess">0</span></div>
-                    <div>LOCKING: <span id="lockchance">0</span></div>              
+                <div>ERROR: <span id="errorguess">0</span></div>            
             </div>
             <div class="centercolumn aligncenter">
                 <div>SOLUTION</div>
@@ -22,7 +21,8 @@
                     <span id="sol1">0</span>          
                     <span id="sol2">0</span></div><!--having the div here prevents adding a whitespace on appendchild-->
                 <div>GUESS</div>
-                <div id="guessdiv">
+                <div class="tooltip" id="guessdiv">
+                    <span class="tooltiptextsmall">ACC: <span id="accuracycurrent">0 0 0</span></span>
                     <span id="guess0">0</span>
                     <span id="guess1">0</span>          
                     <span id="guess2">0</span></div>
@@ -63,26 +63,45 @@
         </div>
         <hr><!--simple line-->
         <div class="flexbox">
-            <div class="leftcolumn"></div>
+            <div class="leftcolumn">
+                <div class="paddingright paddingleft">         
+                    <button class="floatright tooltip" id="accuracybutton" type="button" onclick="upgradeAccuracy('linear')">
+                        <div>Upgrade Accuracy Chance</div>
+                        <span class="tooltiptext"><div>Cost: <span id="accuracycost">50</span> Errors</div>Chance to generate a point of accuracy, on per-element basis. A point of accuracy reduces the range of numbers a guess can produce by 1. E.g. range of 0-4, solution of 3, a successful point of accuracy will reduce the range to 0-3. Accuracy points become harder to generate as they become larger & reset on a new solution. Hover over guess values to see if you've accured any accuracy points for it.</span>
+                    </button>
+                    <button class="floatright tooltip" id="accuracycorrectbutton" type="button" onclick="upgradeAccuracy('correct')">
+                        <div>Accuracy: Correct Guess Bonus</div>
+                        <span class="tooltiptext"><div>Cost: 1000 Errors</div>Doubles the chance to generate a point of accuracy when a correct guess is made.</span>
+                    </button>
+                </div>
+            </div>
             <div class="centercolumn aligncenter">
-                <button id="guessbutton" type="button" onclick="guessLoop()">Initiate Guess Loop</button>
-                <button id="guessbuttondisable" type="button" disabled onclick="guessLoopDisable()">Disable Guess Loop</button>
+                <button class="tooltip" id="guessbutton" type="button" onclick="guessLoop()">
+                    <div>Initiate Guess Loop</div>
+                    <span class="tooltiptext">Generates a set of values every so often, in an attempt to guess the solution. Generates error(s) on a failed guess and solution(s) on a successful guess.</span>
+                </button>
+                <button class="tooltip" id="guessbuttondisable" type="button" disabled onclick="guessLoopDisable()">
+                    <div>Disable Guess Loop</div>
+                    <span class="tooltiptext">Pause the guess loop. This will also pause the timer.</span>
+                </button>
                 <br>
-                <button id="lockbutton" type="button" onclick="upgradeLocking()">Upgrade Locking</button>
             </div> 
             <div class="rightcolumn">
                 <div class="paddingright paddingleft">
                     <div class="paddingbottom">
-                        <span>Accuracy Bonus: <span id="accuracychance">0%</span></span>
+                        <span>Accuracy Chance: <span id="accuracychance">0%</span></span>
                         <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', false)">-</button>
                         <span class="floatright paddingleftright"><span id="accuracynodes">0</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', true)">+</button>
-                        <div class="progressbar">                      
-                            <div id="accuracyprogress" class="progress"></div>                    
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', true)">+</button>        
+                        <div class="progressbar">                           
+                            <div id="accuracyprogress" class="progress"></div>
+                            <div class="tooltip">  
+                                <span class="tooltiptextprogress"><span id="accuracyprogressxptooltip">0</span> / <span id="accuracyprogressleveltooltip">10</span></span>               
+                            </div>
                         </div>
                     </div>
                     <div class="paddingbottom">
-                        <span>Locking Bonus: <span id="lockingbonus">0%</span></span>
+                        <span>Locking Chance: <span id="lockingchance">0%</span></span>
                         <button class="floatright smallbutton" type="button" onclick="">-</button>
                         <span class="floatright paddingleftright"><span id="lockingnodes">0</span></span>
                         <button class="floatright smallbutton" type="button" onclick="">+</button>
@@ -91,12 +110,12 @@
                         </div>
                     </div>
                     <div class="paddingbottom">
-                        <span>Critical Guess Bonus: <span id="critguess">0%</span></span>
+                        <span>Critical Guess Chance: <span id="critguesschance">0%</span></span>
                         <button class="floatright smallbutton" type="button" onclick="">-</button>
                         <span class="floatright paddingleftright"><span id="critguessnodes">0</span></span>
                         <button class="floatright smallbutton" type="button" onclick="">+</button>
                         <div class="progressbar">                      
-                            <div id="criticalprogress" class="progress"></div>                    
+                            <div id="critguessprogress" class="progress"></div>                    
                         </div>
                     </div>
                 </div>
@@ -110,5 +129,8 @@
         <button class="devtool" style="display: none;" type="button" onclick="guess()">DEV: guess()</button>
         <button class="devtool" style="display: none;" type="button" onclick="devAddNodes()">DEV: ADD NODES</button>
         <button class="devtool" style="display: none;" type="button" onclick="devAddAcc()">DEV: ADD ACCURACY</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devUpgradeLocking()">Upgrade Locking</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devAddErrors()">Add Errors</button>
+        
     </body>
 </html>

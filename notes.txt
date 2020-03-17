@@ -1,0 +1,6 @@
+flags
+0 - accuracy bonus on correct guess
+
+skills
+0 - accuracy
+1 - locking
