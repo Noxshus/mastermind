@@ -42,7 +42,7 @@
         <hr>
         <div class="flexbox">
             <div class="leftcolumn">
-                <div class="paddingleft">
+                <div class="paddingleft paddingright">
                     <span>Error Count: <span id="errorstosolvecurrent">0</span></span>
                     <br>
                     <span>Previous Error Count: <span id="errorstosolveprevious">0</span></span>
@@ -51,14 +51,18 @@
                 </div>
             </div>
             <div class="centercolumn">
-                <span>Current Time: <span id="timetosolvecurrent">0</span> sec</span><span class="floatright"><span id="ticktosolvecurrent">0</span> :Tick Count</span>
-                <br>
-                <span>Previous Time: <span id="timetosolveprevious">0</span> sec</span><span class="floatright"><span id="ticktosolveprevious">0</span> :Previous Tick Count</span>
-                <br>
-                <span>Mean Time: <span id="timemean">0</span> sec</span><span class="floatright"><span id="tickmean">0</span> :Mean Tick Count</span>
+                <div class="aligncenter">
+                    <div>Time Left: <span id="gametimer">60</span> secs</div>
+                </div>
             </div>
             <div class="rightcolumn">
-                <button id="clearstatsbutton" type="button" onclick="clearStatistics('clear')">Clear Statistics</button>
+                <div class="paddingleft paddingright">
+                    <span>Current Time: <span id="timetosolvecurrent">0</span> sec</span><span class="floatright"><span id="ticktosolvecurrent">0</span> :Tick Count</span>
+                    <br>
+                    <span>Previous Time: <span id="timetosolveprevious">0</span> sec</span><span class="floatright"><span id="ticktosolveprevious">0</span> :Previous Tick Count</span>
+                    <br>
+                    <span>Mean Time: <span id="timemean">0</span> sec</span><span class="floatright"><span id="tickmean">0</span> :Mean Tick Count</span>
+                </div>
             </div>
         </div>
         <hr><!--simple line-->
@@ -85,6 +89,7 @@
                     <span class="tooltiptext">Pause the guess loop. This will also pause the timer.</span>
                 </button>
                 <br>
+                <button id="clearstatsbutton" type="button" onclick="clearStatistics('clear')">Clear Statistics</button>
             </div> 
             <div class="rightcolumn">
                 <div class="paddingright paddingleft">
@@ -131,6 +136,6 @@
         <button class="devtool" style="display: none;" type="button" onclick="devAddAcc()">DEV: ADD ACCURACY</button>
         <button class="devtool" style="display: none;" type="button" onclick="devUpgradeLocking()">Upgrade Locking</button>
         <button class="devtool" style="display: none;" type="button" onclick="devAddErrors()">Add Errors</button>
-        
+        <button class="devtool" style="display: none;" type="button" onclick="devReduceTime()">Reduce Time</button>
     </body>
 </html>
