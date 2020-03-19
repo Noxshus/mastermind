@@ -12,9 +12,8 @@ var global = { //store for global variables, which we don't need to save between
     timeToSolve: [0, 0, 0, 0], //contains the time it took to solve
     tickToSolve: [0, 0, 0, 0], //contains the number of ticks that pass to solve
     errorsToSolve: [0, 0, 0, 0], //contains a count of the number of errors generated per solve
-    timeMean: 0, //storage for mean values
-    tickMean: 0, //^
-    errorMean: 0, //^
+    mean: [0, 0, 0], //time, tick, error
+    solutionMultipler: 1, //increases whenever complexity increases, uses to multiply solution & error gain
 }
 
 var data = {
@@ -24,13 +23,12 @@ var data = {
     nodeXP: 0, //holds xp towards a node
     nodeXPToLevel: 10, //node XP required to level up and gain a new node
     totalNodes: 0, //total number of nodes
-    nodeAssignments: Array(1).fill(0), //0: accuracy, 1: locking
-    skill: Array(1).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
-    skillXP: Array(1).fill(0), //0: accuracy, 1: locking
-    skillXPToLevel: Array(1).fill(10),
-    upgradeCost: [50, 0, 0], //cost to upgrade a skill
+    nodeAssignments: Array(2).fill(0), //0: accuracy, 1: locking
+    skill: Array(2).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
+    skillXP: Array(2).fill(0), //0: accuracy, 1: locking
+    skillXPToLevel: Array(2).fill(10),
+    upgradeCost: [50, 500, 0], //cost to upgrade a skill
     flag: Array(5).fill(0),
-    lockChance: 0,
 };
 
 window.onload = function() {
@@ -88,7 +86,7 @@ function loadGame()
 
 // Functions related to the #guess - #compare - #generate loop -------------------------------------------------------------------------------------
 
-let saveLoop = setInterval(saveGame, 1000); //saves every 30 seconds
+let saveLoop = setInterval(saveGame, 30000); //saves every 30 seconds
 
 let updateLoop = setInterval(update, 1000); //seperate to everything else, we run checks to see if stuff needs to be unlocked. Seperated from the guessLoop so that we don't spam checks needlessly
 
@@ -126,7 +124,7 @@ function guess() { //principle solution guessing function
         const _correctGuessCount = compare(); //returns the number of correct guesses + runs a number of functions related to comparision, including any crits
     
         if (_correctGuessCount == global.solution.length) { //guess matched the solution
-            if (upgradeSolution() == true) {
+            if (checkForUpgradeSolution() == true) {
                 solved("upgrade");
             }
             else {
@@ -136,7 +134,7 @@ function guess() { //principle solution guessing function
         else { //solution not reached, generates error(s)
             updateErrorsToSolve("tick"); //we only update errors-to-solve on a tick and not on a solution because otherwise we get one extra tick of errors
             updateTimeToSolve("tick");
-            data.errorGuess++; // NEEDS TO BE UPDATED *******************************
+            data.errorGuess = data.errorGuess + global.solutionMultipler;
             document.getElementById("errorguess").innerHTML = data.errorGuess;
         }
     
@@ -158,7 +156,7 @@ function compare() //compare the solution & guess arrays, returns the number of 
         if (global.guess[i] == global.solution[i]) { //correct guess
             _correctGuessCount++;
 
-            if (global.lock[i] == false && rollForCrit(data.lockChance) == true) { //if number isn't already locked, roll for a chance to lock it
+            if (global.lock[i] == false && rollForCrit(data.skill[1]) == true) { //if number isn't already locked, roll for a chance to lock it
                 global.lock[i] = true;
                 document.getElementById("guess" + i).style.color = "#5cb85c" ; //green
             }
@@ -204,6 +202,7 @@ function generateSolution(reason) //used to create a new solution after solving 
                 global.accuracy.length = 3;
                 global.lock.length = 3;
                 global.solutionCeiling = 2;
+                global.solutionMultipler = 1;
             }
             for (let i = 0; i < global.solution.length; i++) {
                 global.solution[i] = returnRandomInteger(global.solutionFloor, global.solutionCeiling);
@@ -221,8 +220,13 @@ function solved(reason) //compilation of logic when a solution has been solved
 {
     switch (reason) {
         case "upgrade":
+            if (global.solution.length > 3) { //only trigger when complexity has already been upgraded once before, to prevent the solution from getting the benefit right away
+                global.solutionMultipler = global.solutionMultipler + (growthCurve("sublinear", global.solutionMultipler));
+            }
+            upgradeSolutionLength();
+            upgradeSolutionCeiling();
         case "solved":
-            data.solutionSolved++; // NEEDS TO BE UPDATED *******************************
+            data.solutionSolved = data.solutionSolved + global.solutionMultipler;
             updateTimeToSolve("tick"); //process time statistics because we still needed a tick to get here
             gainNodeProgress(); //gain progress towards building a node
             document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
@@ -270,7 +274,7 @@ function upgradeAccuracy(type)
     document.getElementById("errorguess").innerHTML = data.errorGuess;
 }
 
-function increaseAccuracy(reason, chance, accuracyElement) //logic behind increasing accuracy (or not)
+function increaseAccuracy(reason, chance, accuracyElement) //logic behind gain a point of accuracy (or not)
 {
     if (global.accuracy[accuracyElement] < global.solutionCeiling) {
         switch (reason) {
@@ -289,11 +293,30 @@ function increaseAccuracy(reason, chance, accuracyElement) //logic behind increa
     }
 }
 
+//Functions related to #locking -----------------
+
+function upgradeLocking(type)
+{
+    switch (type) { //increase locking by 1%, with a superlinear scaling cost
+        case "linear":
+            if (data.errorGuess >= data.upgradeCost[1]) {
+                data.errorGuess = data.errorGuess - data.upgradeCost[1];
+                data.upgradeCost[1] = growthCurve("superlinear", data.upgradeCost[1]);
+                document.getElementById("lockingcost").innerHTML = data.upgradeCost[1];
+                data.skill[1]++;
+                document.getElementById("lockingchance").innerHTML = data.skill[1] + "%";
+            }
+            break;
+    }
+    document.getElementById("errorguess").innerHTML = data.errorGuess;
+}
+
+
 // Functions related to #nodes --------------------------------------------------------------------------------------------------------------------------------------
 
 function gainNodeProgress()
 {
-    data.nodeXP++; // NEEDS TO BE UPDATED *******************************
+    data.nodeXP = data.nodeXP + global.solutionMultipler;
 
     if (data.nodeXP >= data.nodeXPToLevel) { //if incrementing xp right now caused us to level up, then do so
         levelUpNode();
@@ -315,7 +338,7 @@ function gainAssignedNodeProgress() //if a node is assigned to a skill, generate
 {
     for (let i = 0; i < data.nodeAssignments.length; i++) {
         if (data.nodeAssignments[i] > 0) {
-            data.skillXP[i] = data.skillXP[i] + data.nodeAssignments[i];
+            data.skillXP[i] = data.skillXP[i] + (data.nodeAssignments[i] * global.solutionMultipler);
             const _percent = (data.skillXP[i] / data.skillXPToLevel[i]) * 100;
             document.getElementById(returnSkillNameOrNumber(i) + "progress").style.width = _percent + "%";
             document.getElementById(returnSkillNameOrNumber(i) + "progressxptooltip").innerHTML = data.skillXP[i];
@@ -371,14 +394,11 @@ function assignNode(skill, add)
 
 // Functions related to upgrading #solution #length #floor #ceiling ---------------------------------------------------------------------------
 
-function upgradeSolution() //upgrades both solution length & ceiling if they're both under <10
+function checkForUpgradeSolution() //returns depend on whether or not length & ceiling if they're both under <10
 {
     if (global.solutionCeiling < 9 && global.solution.length < 10) { //upgrade logic
-        upgradeSolutionLength();
-        upgradeSolutionCeiling();
         return true;
     }
-
     return false;
 }
 
@@ -411,10 +431,6 @@ function upgradeSolutionCeiling()
 {
     global.solutionCeiling++;
 }
-
-// Functions related to #locking
-
-
 
 //Functions related to #statistics---------------------------------------------------------------------------------------------------------------------
 
@@ -463,8 +479,8 @@ function updateTimeToSolve(reason) //function to update the time-related statist
             document.getElementById("ticktosolvecurrent").innerHTML = global.tickToSolve[0];
             document.getElementById("timetosolveprevious").innerHTML = global.timeToSolve[1];
             document.getElementById("ticktosolveprevious").innerHTML = global.tickToSolve[1];
-            document.getElementById("timemean").innerHTML = global.timeMean;
-            document.getElementById("tickmean").innerHTML = global.tickMean;
+            document.getElementById("timemean").innerHTML = global.mean[0];
+            document.getElementById("tickmean").innerHTML = global.mean[1];
             break;
     }
 }
@@ -479,13 +495,13 @@ function updateErrorsToSolve(reason) //functions mostly the same as above
             document.getElementById("errorstosolveprevious").innerHTML = global.errorsToSolve[1];
             break;
         case "tick":
-            global.errorsToSolve[0] = global.errorsToSolve[0] + 1; //NEEDS TO BE UPDATED *************************
+            global.errorsToSolve[0] = global.errorsToSolve[0] + global.solutionMultipler;
             document.getElementById("errorstosolvecurrent").innerHTML = global.errorsToSolve[0];
             break;
         case "clear":
             document.getElementById("errorstosolvecurrent").innerHTML = global.errorsToSolve[0];
             document.getElementById("errorstosolveprevious").innerHTML = global.errorsToSolve[1];
-            document.getElementById("errormean").innerHTML = global.errorMean;
+            document.getElementById("errormean").innerHTML = global.mean[2];
             break;
     }
 }
@@ -508,8 +524,8 @@ function updateMean(type) //function to shift all the numbers in the array to th
                 }
             }
             _rawNumber = _total / (global.timeToSolve.length - 1);
-            global.timeMean = _rawNumber.toFixed(2);
-            document.getElementById("timemean").innerHTML = global.timeMean;
+            global.mean[0] = _rawNumber.toFixed(2);
+            document.getElementById("timemean").innerHTML = global.mean[0];
             break;
 
         case "tick":
@@ -524,8 +540,8 @@ function updateMean(type) //function to shift all the numbers in the array to th
                 }
             }
             _rawNumber = _total / (global.tickToSolve.length - 1);
-            global.tickMean = _rawNumber.toFixed(2);
-            document.getElementById("tickmean").innerHTML = global.tickMean;
+            global.mean[1] = _rawNumber.toFixed(2);
+            document.getElementById("tickmean").innerHTML = global.mean[1];
             break;
 
         case "error":
@@ -540,8 +556,8 @@ function updateMean(type) //function to shift all the numbers in the array to th
                 }
             }
             _rawNumber = _total / (global.errorsToSolve.length - 1);
-            global.errorMean = _rawNumber.toFixed(2);
-            document.getElementById("errormean").innerHTML = global.errorMean;
+            global.mean[2] = _rawNumber.toFixed(2);
+            document.getElementById("errormean").innerHTML = global.mean[2];
             break;
     }
 }
@@ -555,15 +571,15 @@ function clearStatistics(reason) //clears all previous statistical values (but l
             for (let i = 1; i < global.timeToSolve.length; i++) {
                 global.timeToSolve[i] = 0;
             }
-            global.timeMean = 0;
+            global.mean[0] = 0;
             for (let i = 1; i < global.tickToSolve.length; i++) {
                 global.tickToSolve[i] = 0;
             }
-            global.tickMean = 0;
+            global.mean[1] = 0;
             for (let i = 1; i < global.errorsToSolve.length; i++) {
                 global.errorsToSolve[i] = 0;
             }
-            global.errorMean = 0;
+            global.mean[2] = 0;
 
             updateTimeToSolve("clear");
             updateErrorsToSolve("clear");
@@ -572,15 +588,15 @@ function clearStatistics(reason) //clears all previous statistical values (but l
             for (let i = 0; i < global.timeToSolve.length; i++) {
                 global.timeToSolve[i] = 0;
             }
-            global.timeMean = 0;
+            global.mean[0] = 0;
             for (let i = 0; i < global.tickToSolve.length; i++) {
                 global.tickToSolve[i] = 0;
             }
-            global.tickMean = 0;
+            global.mean[1] = 0;
             for (let i = 0; i < global.errorsToSolve.length; i++) {
                 global.errorsToSolve[i] = 0;
             }
-            global.errorMean = 0;
+            global.mean[2] = 0;
 
             updateTimeToSolve("clear");
             updateErrorsToSolve("clear");
@@ -637,7 +653,7 @@ function devAddAcc()
 
 function devUpgradeLocking()
 {
-    data.lockChance = data.lockChance + 10;
+    data.skill[1] = data.skill[1] + 10;
 }
 
 function devAddErrors()
@@ -649,6 +665,11 @@ function devAddErrors()
 function devReduceTime()
 {
     global.gameTimer = global.gameTimer - 10;
+}
+
+function devDeleteSave()
+{
+    localStorage.removeItem("mastermindIncrementalSave");
 }
 
 //#MISC FUNCTIONS --------------------------------------------------------------------------------------------------
@@ -732,6 +753,6 @@ function growthCurve(model, currentValue) {
         case "log": //logmarithic growth, the inverse of exponentional
             return (Math.log(currentValue)).toFixed(2);
         case "sublinear": //slower than linear growth
-            return (Math.sqrt(currentValue)).toFixed(2);
+            return Math.ceil(Math.sqrt(currentValue)); //rounds UP
     }
 }

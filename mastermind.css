@@ -105,11 +105,13 @@ body { /*undoing defaults*/
     .tooltip .tooltiptext {
         visibility: hidden;
         width: 200px;
+        height: auto;
         background-color: black;
         color: #fff;
         text-align: center;
         padding: 5px;
         border-radius: 6px;
+        font-family: Arial, Helvetica, sans-serif;
         font-size: 11px;
         position: absolute;
         z-index: 10;
@@ -122,6 +124,7 @@ body { /*undoing defaults*/
         text-align: center;
         padding: 5px;
         border-radius: 6px;
+        font-family: Arial, Helvetica, sans-serif;
         font-size: 11px;
         position: absolute;
         top: 100%; /*displace it down*/

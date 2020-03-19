@@ -11,12 +11,13 @@
     <body>
         <div class="flexbox">
             <div class="leftcolumn aligncenter">
-                <div>SOLVED: <span id="solvedsolution">0<span></div>
-                <div>ERROR: <span id="errorguess">0</span></div>            
+                <div>SOLUTIONS: <span id="solvedsolution">0<span></div>
+                <div>ERRORS: <span id="errorguess">0</span></div>            
             </div>
             <div class="centercolumn aligncenter">
                 <div>SOLUTION</div>
-                <div id="solutiondiv">
+                <div class="tooltip" id="solutiondiv">
+                    <span class="tooltiptextsmall">Our aim is to reach this value. When guessing correctly, complexity will increase. Higher complexity results in increased solution & error gain.</span>
                     <span id="sol0">0</span>
                     <span id="sol1">0</span>          
                     <span id="sol2">0</span></div><!--having the div here prevents adding a whitespace on appendchild-->
@@ -27,7 +28,7 @@
                     <span id="guess1">0</span>          
                     <span id="guess2">0</span></div>
             </div>
-            <div class="rightcolumn aligncenter">
+            <div class="rightcolumn aligncenter tooltip">
                 <div>NODE CONSTRUCTION</div>
                 <div class="paddingright paddingleft">
                     <div id="nodeprogressbar">                      
@@ -36,6 +37,7 @@
                     </div>
                     <div><span id="nodexp">0</span> / <span id="nodexptolevel">0</span></div>
                     <div>NODES AVAILABLE: <span id="totalnodes">0</span></div>
+                    <span class="tooltiptext">We gain progress towards a new node when reaching a correct solution. Nodes can be assigned to various attributes below, distributing that progress to them too & improving them further.</span>
                 </div>
             </div>
         </div>
@@ -52,7 +54,10 @@
             </div>
             <div class="centercolumn">
                 <div class="aligncenter">
-                    <div>Time Left: <span id="gametimer">60</span> secs</div>
+                    <div class="tooltip">
+                        <div>Time Left: <span id="gametimer">60</span> secs</div>
+                        <span class="tooltiptext">When the timer expires, solution complexity will reset (but you'll keep all upgrades and accumulated resources). The timer restarts whenever we reach a solution.</span>
+                    </div>
                 </div>
             </div>
             <div class="rightcolumn">
@@ -65,7 +70,7 @@
                 </div>
             </div>
         </div>
-        <hr><!--simple line-->
+        <br>
         <div class="flexbox">
             <div class="leftcolumn">
                 <div class="paddingright paddingleft">         
@@ -77,12 +82,18 @@
                         <div>Accuracy: Correct Guess Bonus</div>
                         <span class="tooltiptext"><div>Cost: 1000 Errors</div>Doubles the chance to generate a point of accuracy when a correct guess is made.</span>
                     </button>
+                    <br>
+                    <br>
+                    <button class="floatright tooltip" id="lockingbutton" type="button" onclick="upgradeLocking('linear')">
+                        <div>Upgrade Locking Chance</div>
+                        <span class="tooltiptext"><div>Cost: <span id="lockingcost">500</span> Errors</div>Chance to 'lock' a correct guess in-place, preventing it from changing until a solution is reached. Locks are coloured green & reset when a new solution is generated.</span>
+                    </button>
                 </div>
             </div>
             <div class="centercolumn aligncenter">
                 <button class="tooltip" id="guessbutton" type="button" onclick="guessLoop()">
                     <div>Initiate Guess Loop</div>
-                    <span class="tooltiptext">Generates a set of values every so often, in an attempt to guess the solution. Generates error(s) on a failed guess and solution(s) on a successful guess.</span>
+                    <span class="tooltiptext">We generate a set of values every so often, in an attempt to guess the solution. Generates error(s) on a failed guess and solution(s) on a successful guess.</span>
                 </button>
                 <button class="tooltip" id="guessbuttondisable" type="button" disabled onclick="guessLoopDisable()">
                     <div>Disable Guess Loop</div>
@@ -107,11 +118,14 @@
                     </div>
                     <div class="paddingbottom">
                         <span>Locking Chance: <span id="lockingchance">0%</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="">-</button>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('locking', false)">-</button>
                         <span class="floatright paddingleftright"><span id="lockingnodes">0</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="">+</button>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('locking', true)">+</button>
                         <div class="progressbar">                      
-                            <div id="lockingprogress" class="progress"></div>                    
+                            <div id="lockingprogress" class="progress"></div>          
+                            <div class="tooltip">  
+                                <span class="tooltiptextprogress"><span id="lockingprogressxptooltip">0</span> / <span id="lockingprogressleveltooltip">10</span></span>               
+                            </div>          
                         </div>
                     </div>
                     <div class="paddingbottom">
@@ -137,5 +151,6 @@
         <button class="devtool" style="display: none;" type="button" onclick="devUpgradeLocking()">Upgrade Locking</button>
         <button class="devtool" style="display: none;" type="button" onclick="devAddErrors()">Add Errors</button>
         <button class="devtool" style="display: none;" type="button" onclick="devReduceTime()">Reduce Time</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devDeleteSave()">Delete Save</button>
     </body>
 </html>
