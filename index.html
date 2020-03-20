@@ -11,7 +11,10 @@
     <body>
         <div class="flexbox">
             <div class="leftcolumn aligncenter">
-                <div>SOLUTIONS: <span id="solvedsolution">0<span></div>
+                <div class="popup">
+                    <div>SOLUTIONS: <span id="solvedsolution">0<span></div>
+                    <span class="popuptext" id="critsolvepopup">!</span>
+                </div>
                 <div>ERRORS: <span id="errorguess">0</span></div>            
             </div>
             <div class="centercolumn aligncenter">
@@ -76,7 +79,7 @@
                 <div class="paddingright paddingleft">         
                     <button class="floatright tooltip" id="accuracybutton" type="button" onclick="upgradeAccuracy('linear')">
                         <div>Upgrade Accuracy Chance</div>
-                        <span class="tooltiptext"><div>Cost: <span id="accuracycost">50</span> Errors</div>Chance to generate a point of accuracy, on per-element basis. A point of accuracy reduces the range of numbers a guess can produce by 1. E.g. range of 0-4, solution of 3, a successful point of accuracy will reduce the range to 0-3. Accuracy points become harder to generate as they become larger & reset on a new solution. Hover over guess values to see if you've accured any accuracy points for it.</span>
+                        <span class="tooltiptext"><div>Cost: <span id="accuracycost">50</span> Errors</div>Chance to generate a point of accuracy, on per-element basis. A point of accuracy reduces the range of numbers a guess can produce by 1. E.g. range of 0-4, solution of 3, a successful point of accuracy will reduce the range to 0-3. Chance to generate a point halves each time a point is generated, but is reset on a new solution. Hover over guess values to see if you've accured any accuracy points for it.</span>
                     </button>
                     <button class="floatright tooltip" id="accuracycorrectbutton" type="button" onclick="upgradeAccuracy('correct')">
                         <div>Accuracy: Correct Guess Bonus</div>
@@ -87,6 +90,12 @@
                     <button class="floatright tooltip" id="lockingbutton" type="button" onclick="upgradeLocking('linear')">
                         <div>Upgrade Locking Chance</div>
                         <span class="tooltiptext"><div>Cost: <span id="lockingcost">500</span> Errors</div>Chance to 'lock' a correct guess in-place, preventing it from changing until a solution is reached. Locks are coloured green & reset when a new solution is generated.</span>
+                    </button>
+                    <br>
+                    <br>
+                    <button class="floatright tooltip" id="critguessbutton" type="button" onclick="upgradeCritGuess('linear')">
+                        <div>Upgrade Critical Guess Chance</div>
+                        <span class="tooltiptext"><div>Cost: <span id="critguesscost">5000</span> Errors</div>Chance on making an incorrect guess to instead return a correct one.</span>
                     </button>
                 </div>
             </div>
@@ -130,11 +139,14 @@
                     </div>
                     <div class="paddingbottom">
                         <span>Critical Guess Chance: <span id="critguesschance">0%</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="">-</button>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('critguess', false)">-</button>
                         <span class="floatright paddingleftright"><span id="critguessnodes">0</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="">+</button>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('critguess', true)">+</button>
                         <div class="progressbar">                      
-                            <div id="critguessprogress" class="progress"></div>                    
+                            <div id="critguessprogress" class="progress"></div>
+                            <div class="tooltip">  
+                                <span class="tooltiptextprogress"><span id="critguessprogressxptooltip">0</span> / <span id="critguessprogressleveltooltip">10</span></span>               
+                            </div>                   
                         </div>
                     </div>
                 </div>
@@ -152,5 +164,7 @@
         <button class="devtool" style="display: none;" type="button" onclick="devAddErrors()">Add Errors</button>
         <button class="devtool" style="display: none;" type="button" onclick="devReduceTime()">Reduce Time</button>
         <button class="devtool" style="display: none;" type="button" onclick="devDeleteSave()">Delete Save</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritGuess()">Increase CritGuess</button>
+        <button class="devtool" style="display: none;" type="button" onclick="test()">test()</button>
     </body>
 </html>

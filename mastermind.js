@@ -23,11 +23,11 @@ var data = {
     nodeXP: 0, //holds xp towards a node
     nodeXPToLevel: 10, //node XP required to level up and gain a new node
     totalNodes: 0, //total number of nodes
-    nodeAssignments: Array(2).fill(0), //0: accuracy, 1: locking
-    skill: Array(2).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
-    skillXP: Array(2).fill(0), //0: accuracy, 1: locking
-    skillXPToLevel: Array(2).fill(10),
-    upgradeCost: [50, 500, 0], //cost to upgrade a skill
+    nodeAssignments: Array(3).fill(0), //0: accuracy, 1: locking, 2: critguess
+    skill: Array(3).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
+    skillXP: Array(3).fill(0), //0: accuracy, 1: locking
+    skillXPToLevel: Array(3).fill(10),
+    upgradeCost: [50, 500, 5000], //cost to upgrade a skill
     flag: Array(5).fill(0),
 };
 
@@ -137,14 +137,8 @@ function guess() { //principle solution guessing function
             data.errorGuess = data.errorGuess + global.solutionMultipler;
             document.getElementById("errorguess").innerHTML = data.errorGuess;
         }
-    
-        let _acc = ""; //update the accuracy values in the tooltops
-    
-        for(let i = 0; i < global.accuracy.length; i++) {
-            _acc += global.accuracy[i] + " ";
-        }
-    
-        document.getElementById("accuracycurrent").innerHTML = _acc;
+        
+        updateAccuracy(); //updates the accuracy point tooltip
     }
 }
 
@@ -166,10 +160,18 @@ function compare() //compare the solution & guess arrays, returns the number of 
             }
         } 
         else if (global.guess[i] != global.solution[i]) { //incorrect guess
-            if (global.accuracy[i] < global.solutionCeiling && data.skill[0] > 0) { //increase accuracy for a incorrect guess, with a % chance. Accuracy must be greater than 0
-                increaseAccuracy("incorrect", data.skill[0], i);
-            }   
-            document.getElementById("guess" + i).style.color = "#d9534f"; //red
+            if (rollForCritGuess() == true) { //roll for a critical guess
+                global.guess[i] = global.solution[i];
+                _correctGuessCount++;
+                document.getElementById("guess" + i).innerHTML = global.guess[i];
+                document.getElementById("guess" + i).style.color = "#0275d8"; //dark blue - the solve colour
+            }
+            else {
+                if (global.accuracy[i] < global.solutionCeiling && data.skill[0] > 0) { //increase accuracy for a incorrect guess, with a % chance. Accuracy must be greater than 0
+                    increaseAccuracy("incorrect", data.skill[0], i);
+                }   
+                document.getElementById("guess" + i).style.color = "#d9534f"; //red
+            }
         }
     }
 
@@ -250,6 +252,17 @@ function rollForCrit(critChance) //critchance should be a % value, up to 2 decim
     }
 }
 
+function criticalPopup(type) //handles the appearence of a little exclaimation mark near solutions or errors currency, to indicate that a crit occured
+{
+    switch (type) {
+        case "solve":
+            const popup = document.getElementById("critsolvepopup");
+            popup.classList.toggle("show");
+            setTimeout(popup.classList.toggle("show"), data.tickSpeed);
+            break;
+    }
+}
+
 //Functions related to #accuracy
 
 function upgradeAccuracy(type)
@@ -293,6 +306,17 @@ function increaseAccuracy(reason, chance, accuracyElement) //logic behind gain a
     }
 }
 
+function updateAccuracy() //updates the accuracy point count in the tooltip
+{
+    let _acc = ""; //update the accuracy values in the tooltops
+    
+    for(let i = 0; i < global.accuracy.length; i++) {
+        _acc += global.accuracy[i] + " ";
+    }
+
+    document.getElementById("accuracycurrent").innerHTML = _acc;
+}
+
 //Functions related to #locking -----------------
 
 function upgradeLocking(type)
@@ -310,6 +334,38 @@ function upgradeLocking(type)
     }
     document.getElementById("errorguess").innerHTML = data.errorGuess;
 }
+
+// Functions related to #critical guess
+
+function upgradeCritGuess(type)
+{
+    switch (type) { //increase critguess by 1%, with a superlinear scaling cost
+        case "linear":
+            if (data.errorGuess >= data.upgradeCost[2]) {
+                data.errorGuess = data.errorGuess - data.upgradeCost[2];
+                data.upgradeCost[1] = growthCurve("superlinear", data.upgradeCost[2]);
+                document.getElementById("critguesscost").innerHTML = data.upgradeCost[2];
+                data.skill[2]++;
+                document.getElementById("critguesschance").innerHTML = data.skill[2] + "%";
+            }
+            break;
+    }
+    document.getElementById("errorguess").innerHTML = data.errorGuess;   
+}
+
+function rollForCritGuess() //check for a critical guess, return the solution is it lands
+{
+    if (rollForCrit(data.skill[2]) == true) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+// Functions related to #critical solves
+
+
 
 
 // Functions related to #nodes --------------------------------------------------------------------------------------------------------------------------------------
@@ -672,6 +728,11 @@ function devDeleteSave()
     localStorage.removeItem("mastermindIncrementalSave");
 }
 
+function devIncreaseCritGuess()
+{
+    data.skill[2] = data.skill[2] + 10;
+}
+
 //#MISC FUNCTIONS --------------------------------------------------------------------------------------------------
 
 function returnRandomInteger(min, max) //returns a random integer, min & max included
@@ -732,6 +793,8 @@ function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the
                 return "accuracy";
             case 1:
                 return "locking";
+            case 2:
+                return "critguess";
         }
     }
     else {
@@ -740,6 +803,8 @@ function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the
                 return 0;
             case "locking":
                 return 1;
+            case "critguess":
+                return 2;
         }
     }
 }
@@ -752,7 +817,7 @@ function growthCurve(model, currentValue) {
             return (Math.pow(currentValue, 2)).toFixed(2);
         case "log": //logmarithic growth, the inverse of exponentional
             return (Math.log(currentValue)).toFixed(2);
-        case "sublinear": //slower than linear growth
+        case "sublinear": //slower than linear growth - used for the solution complexity multiplier
             return Math.ceil(Math.sqrt(currentValue)); //rounds UP
     }
 }
