@@ -77,25 +77,31 @@
         <div class="flexbox">
             <div class="leftcolumn">
                 <div class="paddingright paddingleft">         
-                    <button class="floatright tooltip" id="accuracybutton" type="button" onclick="upgradeAccuracy('linear')">
-                        <div>Upgrade Accuracy Chance</div>
-                        <span class="tooltiptext"><div>Cost: <span id="accuracycost">50</span> Errors</div>Chance to generate a point of accuracy, on per-element basis. A point of accuracy reduces the range of numbers a guess can produce by 1. E.g. range of 0-4, solution of 3, a successful point of accuracy will reduce the range to 0-3. Chance to generate a point halves each time a point is generated, but is reset on a new solution. Hover over guess values to see if you've accured any accuracy points for it.</span>
+                    <button class="floatright tooltip" id="accuracybutton" type="button" onclick="upgradeAccuracy(0)">
+                        <div>Enable Accuracy</div>
+                        <span class="tooltiptext"><div>Cost: 50 Errors</div>Accuracy is a chance to generate a point of accuracy, on per-element basis. A point of accuracy reduces the range of numbers a guess can produce by 1. E.g. range of 0-4, solution of 3, a successful point of accuracy will reduce the range to 0-3. Chance to generate a point halves each time a point is generated, but is reset on a new solution. Hover over guess values to see if you've accured any accuracy points for it.</span>
                     </button>
-                    <button class="floatright tooltip" id="accuracycorrectbutton" type="button" onclick="upgradeAccuracy('correct')">
+                    <button class="floatright tooltip" id="accuracycorrectbutton" type="button" onclick="upgradeAccuracy(1)">
                         <div>Accuracy: Correct Guess Bonus</div>
                         <span class="tooltiptext"><div>Cost: 1000 Errors</div>Doubles the chance to generate a point of accuracy when a correct guess is made.</span>
                     </button>
                     <br>
                     <br>
-                    <button class="floatright tooltip" id="lockingbutton" type="button" onclick="upgradeLocking('linear')">
-                        <div>Upgrade Locking Chance</div>
-                        <span class="tooltiptext"><div>Cost: <span id="lockingcost">500</span> Errors</div>Chance to 'lock' a correct guess in-place, preventing it from changing until a solution is reached. Locks are coloured green & reset when a new solution is generated.</span>
+                    <button class="floatright tooltip" id="lockingbutton" type="button" onclick="upgradeLocking(0)">
+                        <div>Enable Locking</div>
+                        <span class="tooltiptext"><div>Cost: 500 Errors</div>Locking is a chance to 'lock' a correct guess in-place, preventing it from changing until a solution is reached. Locks are coloured green & reset when a new solution is generated.</span>
                     </button>
                     <br>
                     <br>
-                    <button class="floatright tooltip" id="critguessbutton" type="button" onclick="upgradeCritGuess('linear')">
-                        <div>Upgrade Critical Guess Chance</div>
-                        <span class="tooltiptext"><div>Cost: <span id="critguesscost">5000</span> Errors</div>Chance on making an incorrect guess to instead return a correct one.</span>
+                    <button class="floatright tooltip" id="critguessbutton" type="button" onclick="upgradeCritGuess(0)">
+                        <div>Enable Critical Guess</div>
+                        <span class="tooltiptext"><div>Cost: 5000 Errors</div>A Critical Guess turns an incorrect guess into a correct one.</span>
+                    </button>
+                    <br>
+                    <br>
+                    <button class="floatright tooltip" id="critsolvebutton" type="button" onclick="upgradeCritSolve(0)">
+                        <div>Enable Critical Solve</div>
+                        <span class="tooltiptext"><div>Cost: 5000 Errors</div>A Critical Solve doubles the value of a solve (including progress towards nodes).</span>
                     </button>
                 </div>
             </div>
@@ -149,6 +155,18 @@
                             </div>                   
                         </div>
                     </div>
+                    <div class="paddingbottom">
+                        <span>Critical Solve Chance: <span id="critsolvechance">0%</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('critsolve', false)">-</button>
+                        <span class="floatright paddingleftright"><span id="critsolvenodes">0</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('critsolve', true)">+</button>
+                        <div class="progressbar">                      
+                            <div id="critsolveprogress" class="progress"></div>
+                            <div class="tooltip">  
+                                <span class="tooltiptextprogress"><span id="critsolveprogressxptooltip">0</span> / <span id="critsolveprogressleveltooltip">10</span></span>               
+                            </div>                   
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -166,5 +184,6 @@
         <button class="devtool" style="display: none;" type="button" onclick="devDeleteSave()">Delete Save</button>
         <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritGuess()">Increase CritGuess</button>
         <button class="devtool" style="display: none;" type="button" onclick="test()">test()</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritSolve()">Increase CritSolve</button>
     </body>
 </html>

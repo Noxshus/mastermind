@@ -23,11 +23,10 @@ var data = {
     nodeXP: 0, //holds xp towards a node
     nodeXPToLevel: 10, //node XP required to level up and gain a new node
     totalNodes: 0, //total number of nodes
-    nodeAssignments: Array(3).fill(0), //0: accuracy, 1: locking, 2: critguess
-    skill: Array(3).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
-    skillXP: Array(3).fill(0), //0: accuracy, 1: locking
-    skillXPToLevel: Array(3).fill(10),
-    upgradeCost: [50, 500, 5000], //cost to upgrade a skill
+    nodeAssignments: Array(4).fill(0), //0: accuracy, 1: locking, 2: critguess
+    skill: Array(4).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
+    skillXP: Array(4).fill(0), //0: accuracy, 1: locking
+    skillXPToLevel: Array(4).fill(10),
     flag: Array(5).fill(0),
 };
 
@@ -55,7 +54,6 @@ window.onload = function() {
     for (let i = 0; i < this.data.nodeAssignments.length; i++) {
         const _skill = returnSkillNameOrNumber(i);
         document.getElementById(_skill + "nodes").innerHTML = data.nodeAssignments[i];
-        document.getElementById(_skill + "cost").innerHTML = data.upgradeCost[i];
         document.getElementById(_skill + "chance").innerHTML = data.skill[i] + "%";
         const _subNodePercent = (data.skillXP[i] / data.skillXPToLevel[i]) * 100;
         document.getElementById(_skill + "progress").style.width = _subNodePercent + "%";
@@ -228,7 +226,12 @@ function solved(reason) //compilation of logic when a solution has been solved
             upgradeSolutionLength();
             upgradeSolutionCeiling();
         case "solved":
-            data.solutionSolved = data.solutionSolved + global.solutionMultipler;
+            if (rollForCritSolve() == true) {
+                data.solutionSolved = (data.solutionSolved + global.solutionMultipler) * 2;
+            }
+            else {
+                data.solutionSolved = data.solutionSolved + global.solutionMultipler;
+            }
             updateTimeToSolve("tick"); //process time statistics because we still needed a tick to get here
             gainNodeProgress(); //gain progress towards building a node
             document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
@@ -258,7 +261,8 @@ function criticalPopup(type) //handles the appearence of a little exclaimation m
         case "solve":
             const popup = document.getElementById("critsolvepopup");
             popup.classList.toggle("show");
-            setTimeout(popup.classList.toggle("show"), data.tickSpeed);
+            setTimeout(function() {popup.classList.toggle("show")}, data.tickSpeed);
+            console.log("triggered");
             break;
     }
 }
@@ -268,16 +272,14 @@ function criticalPopup(type) //handles the appearence of a little exclaimation m
 function upgradeAccuracy(type)
 {
     switch (type) {
-        case "linear": //increase accuracy by 1%, with a superlinear scaling cost
-            if (data.errorGuess >= data.upgradeCost[0]) {
-                data.errorGuess = data.errorGuess - data.upgradeCost[0];
-                data.upgradeCost[0] = growthCurve("superlinear", data.upgradeCost[0]);
-                document.getElementById("accuracycost").innerHTML = data.upgradeCost[0];
+        case 0: //enables accuracy
+            if (data.errorGuess >= 50) {
+                data.errorGuess = data.errorGuess - 50;
                 data.skill[0]++;
                 document.getElementById("accuracychance").innerHTML = data.skill[0] + "%";
             }
             break;
-        case "correct": //one time upgrade to grant a bonus to accuracy on a correct guess
+        case 1: //one time upgrade to grant a bonus to accuracy on a correct guess
             if (data.errorGuess >= 1000 && data.flag[0] == 0) {
                 data.errorGuess = data.errorGuess - 1000;
                 data.flag[0] = 1;
@@ -321,12 +323,10 @@ function updateAccuracy() //updates the accuracy point count in the tooltip
 
 function upgradeLocking(type)
 {
-    switch (type) { //increase locking by 1%, with a superlinear scaling cost
-        case "linear":
-            if (data.errorGuess >= data.upgradeCost[1]) {
-                data.errorGuess = data.errorGuess - data.upgradeCost[1];
-                data.upgradeCost[1] = growthCurve("superlinear", data.upgradeCost[1]);
-                document.getElementById("lockingcost").innerHTML = data.upgradeCost[1];
+    switch (type) { 
+        case 0: //enable locking
+            if (data.errorGuess >= 500) {
+                data.errorGuess = data.errorGuess - 500
                 data.skill[1]++;
                 document.getElementById("lockingchance").innerHTML = data.skill[1] + "%";
             }
@@ -339,12 +339,10 @@ function upgradeLocking(type)
 
 function upgradeCritGuess(type)
 {
-    switch (type) { //increase critguess by 1%, with a superlinear scaling cost
-        case "linear":
-            if (data.errorGuess >= data.upgradeCost[2]) {
-                data.errorGuess = data.errorGuess - data.upgradeCost[2];
-                data.upgradeCost[1] = growthCurve("superlinear", data.upgradeCost[2]);
-                document.getElementById("critguesscost").innerHTML = data.upgradeCost[2];
+    switch (type) {
+        case 0: //enables crit guesses
+            if (data.errorGuess >= 5000) { 
+                data.errorGuess = data.errorGuess - 5000;
                 data.skill[2]++;
                 document.getElementById("critguesschance").innerHTML = data.skill[2] + "%";
             }
@@ -353,7 +351,7 @@ function upgradeCritGuess(type)
     document.getElementById("errorguess").innerHTML = data.errorGuess;   
 }
 
-function rollForCritGuess() //check for a critical guess, return the solution is it lands
+function rollForCritGuess() //check for a critical guess
 {
     if (rollForCrit(data.skill[2]) == true) {
         return true;
@@ -365,7 +363,30 @@ function rollForCritGuess() //check for a critical guess, return the solution is
 
 // Functions related to #critical solves
 
+function upgradeCritSolve(type)
+{
+    switch (type) {
+        case 0: //enables crit solves
+            if (data.errorGuess >= 5000) { 
+                data.errorGuess = data.errorGuess - 5000;
+                data.skill[3]++;
+                document.getElementById("critsolvechance").innerHTML = data.skill[3] + "%";
+            }
+            break;
+    }
+    document.getElementById("errorguess").innerHTML = data.errorGuess;
+}
 
+function rollForCritSolve() //check for a critical solve
+{
+    if (rollForCrit(data.skill[3]) == true) {
+        criticalPopup("solve");
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
 
 // Functions related to #nodes --------------------------------------------------------------------------------------------------------------------------------------
@@ -733,6 +754,11 @@ function devIncreaseCritGuess()
     data.skill[2] = data.skill[2] + 10;
 }
 
+function devIncreaseCritSolve()
+{
+    data.skill[3] = data.skill[3] + 10;
+}
+
 //#MISC FUNCTIONS --------------------------------------------------------------------------------------------------
 
 function returnRandomInteger(min, max) //returns a random integer, min & max included
@@ -787,7 +813,7 @@ function returnWeighedGuessInteger(solutionValue, accuracy) //uses global values
 }
 
 function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the name, it returns the number, if i give it the number, it returns the name
-    if (Number.isInteger(skill) == true) {
+    if (Number.isNaN(skill) == false) {
         switch (skill) {
             case 0:
                 return "accuracy";
@@ -795,6 +821,8 @@ function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the
                 return "locking";
             case 2:
                 return "critguess";
+            case 3:
+                return "critsolve";
         }
     }
     else {
@@ -805,6 +833,8 @@ function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the
                 return 1;
             case "critguess":
                 return 2;
+            case "critsolve":
+                return 3;
         }
     }
 }
