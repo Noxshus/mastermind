@@ -23,10 +23,10 @@ var data = {
     nodeXP: 0, //holds xp towards a node
     nodeXPToLevel: 10, //node XP required to level up and gain a new node
     totalNodes: 0, //total number of nodes
-    nodeAssignments: Array(4).fill(0), //0: accuracy, 1: locking, 2: critguess
-    skill: Array(4).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
-    skillXP: Array(4).fill(0), //0: accuracy, 1: locking
-    skillXPToLevel: Array(4).fill(10),
+    nodeAssignments: Array(5).fill(0), //0: accuracy, 1: locking, 2: critguess
+    skill: Array(5).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
+    skillXP: Array(5).fill(0), //0: accuracy, 1: locking
+    skillXPToLevel: Array(5).fill(10),
     flag: Array(5).fill(0),
 };
 
@@ -130,10 +130,7 @@ function guess() { //principle solution guessing function
             }
         }
         else { //solution not reached, generates error(s)
-            updateErrorsToSolve("tick"); //we only update errors-to-solve on a tick and not on a solution because otherwise we get one extra tick of errors
-            updateTimeToSolve("tick");
-            data.errorGuess = data.errorGuess + global.solutionMultipler;
-            document.getElementById("errorguess").innerHTML = data.errorGuess;
+            error();
         }
         
         updateAccuracy(); //updates the accuracy point tooltip
@@ -226,10 +223,10 @@ function solved(reason) //compilation of logic when a solution has been solved
             upgradeSolutionLength();
             upgradeSolutionCeiling();
         case "solved":
-            if (rollForCritSolve() == true) {
-                data.solutionSolved = (data.solutionSolved + global.solutionMultipler) * 2;
+            if (rollForCritSolve() == true) { //roll for a critical solve
+                data.solutionSolved = data.solutionSolved + (global.solutionMultipler * 2);
             }
-            else {
+            else { //no crit
                 data.solutionSolved = data.solutionSolved + global.solutionMultipler;
             }
             updateTimeToSolve("tick"); //process time statistics because we still needed a tick to get here
@@ -238,6 +235,17 @@ function solved(reason) //compilation of logic when a solution has been solved
             generateSolution(reason);
             break;
     }
+}
+
+function error() //compilation of logic when a guess failed to solve
+{
+    updateErrorsToSolve("tick"); //we only update errors-to-solve on a tick and not on a solution because otherwise we get one extra tick of errors
+    updateTimeToSolve("tick");
+    if (rollForCritError() == true) {
+        data.errorGuess = data.errorGuess + (global.solutionMultipler * 2);
+    }
+    data.errorGuess = data.errorGuess + global.solutionMultipler;
+    document.getElementById("errorguess").innerHTML = data.errorGuess;
 }
 
 // ----------------------------------------- #upgrades ----------------------------------------------------------------------------------------------
@@ -259,9 +267,15 @@ function criticalPopup(type) //handles the appearence of a little exclaimation m
 {
     switch (type) {
         case "solve":
-            const popup = document.getElementById("critsolvepopup");
-            popup.classList.toggle("show");
-            setTimeout(function() {popup.classList.toggle("show")}, data.tickSpeed);
+            const popupsolve = document.getElementById("critsolvepopup");
+            popupsolve.classList.toggle("show");
+            setTimeout(function() {popupsolve.classList.toggle("show")}, data.tickSpeed);
+            console.log("triggered");
+            break;
+        case "error":
+            const popuperror = document.getElementById("criterrorpopup");
+            popuperror.classList.toggle("show");
+            setTimeout(function() {popuperror.classList.toggle("show")}, data.tickSpeed);
             console.log("triggered");
             break;
     }
@@ -276,6 +290,7 @@ function upgradeAccuracy(type)
             if (data.errorGuess >= 50) {
                 data.errorGuess = data.errorGuess - 50;
                 data.skill[0]++;
+                document.getElementById("accuracybutton").remove();
                 document.getElementById("accuracychance").innerHTML = data.skill[0] + "%";
             }
             break;
@@ -328,6 +343,7 @@ function upgradeLocking(type)
             if (data.errorGuess >= 500) {
                 data.errorGuess = data.errorGuess - 500
                 data.skill[1]++;
+                document.getElementById("lockingbutton").remove();
                 document.getElementById("lockingchance").innerHTML = data.skill[1] + "%";
             }
             break;
@@ -344,6 +360,7 @@ function upgradeCritGuess(type)
             if (data.errorGuess >= 5000) { 
                 data.errorGuess = data.errorGuess - 5000;
                 data.skill[2]++;
+                document.getElementById("critguessbutton").remove();
                 document.getElementById("critguesschance").innerHTML = data.skill[2] + "%";
             }
             break;
@@ -370,6 +387,7 @@ function upgradeCritSolve(type)
             if (data.errorGuess >= 5000) { 
                 data.errorGuess = data.errorGuess - 5000;
                 data.skill[3]++;
+                document.getElementById("critsolvebutton").remove();
                 document.getElementById("critsolvechance").innerHTML = data.skill[3] + "%";
             }
             break;
@@ -381,6 +399,34 @@ function rollForCritSolve() //check for a critical solve
 {
     if (rollForCrit(data.skill[3]) == true) {
         criticalPopup("solve");
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+//Functions related to #critical errors
+
+function upgradeCritError(type)
+{
+    switch (type) {
+        case 0: //enables crit errors
+            if (data.errorGuess >= 5000) { 
+                data.errorGuess = data.errorGuess - 5000;
+                data.skill[4]++;
+                document.getElementById("criterrorbutton").remove();
+                document.getElementById("criterrorchance").innerHTML = data.skill[4] + "%";
+            }
+            break;
+    }
+    document.getElementById("errorguess").innerHTML = data.errorGuess;
+}
+
+function rollForCritError() //check for a critical error
+{
+    if (rollForCrit(data.skill[4]) == true) {
+        criticalPopup("error");
         return true;
     }
     else {
@@ -759,6 +805,11 @@ function devIncreaseCritSolve()
     data.skill[3] = data.skill[3] + 10;
 }
 
+function devIncreaseCritError()
+{
+    data.skill[4] = data.skill[4] + 10;
+}
+
 //#MISC FUNCTIONS --------------------------------------------------------------------------------------------------
 
 function returnRandomInteger(min, max) //returns a random integer, min & max included
@@ -823,6 +874,8 @@ function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the
                 return "critguess";
             case 3:
                 return "critsolve";
+            case 4:
+                return "criterror";
         }
     }
     else {
@@ -835,6 +888,8 @@ function returnSkillNameOrNumber(skill) { //basically an enum - if i give it the
                 return 2;
             case "critsolve":
                 return 3;
+            case "criterror":
+                return 4;
         }
     }
 }

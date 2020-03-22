@@ -15,7 +15,11 @@
                     <div>SOLUTIONS: <span id="solvedsolution">0<span></div>
                     <span class="popuptext" id="critsolvepopup">!</span>
                 </div>
-                <div>ERRORS: <span id="errorguess">0</span></div>            
+                <br>
+                <div class="popup">
+                    <div>ERRORS: <span id="errorguess">0</span></div>
+                    <span class="popuptext" id="criterrorpopup">!</span>
+                </div>
             </div>
             <div class="centercolumn aligncenter">
                 <div>SOLUTION</div>
@@ -100,8 +104,14 @@
                     <br>
                     <br>
                     <button class="floatright tooltip" id="critsolvebutton" type="button" onclick="upgradeCritSolve(0)">
-                        <div>Enable Critical Solve</div>
+                        <div>Enable Critical Solves</div>
                         <span class="tooltiptext"><div>Cost: 5000 Errors</div>A Critical Solve doubles the value of a solve (including progress towards nodes).</span>
+                    </button>
+                    <br>
+                    <br>
+                    <button class="floatright tooltip" id="criterrorbutton" type="button" onclick="upgradeCritError(0)">
+                        <div>Enable Critical Errors</div>
+                        <span class="tooltiptext"><div>Cost: 5000 Errors</div>A Critical Error doubles the number of errors generated when failing a guess.</span>
                     </button>
                 </div>
             </div>
@@ -167,6 +177,18 @@
                             </div>                   
                         </div>
                     </div>
+                    <div class="paddingbottom">
+                        <span>Critical Error Chance: <span id="criterrorchance">0%</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('criterror', false)">-</button>
+                        <span class="floatright paddingleftright"><span id="criterrornodes">0</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('criterror', true)">+</button>
+                        <div class="progressbar">                      
+                            <div id="criterrorprogress" class="progress"></div>
+                            <div class="tooltip">  
+                                <span class="tooltiptextprogress"><span id="criterrorprogressxptooltip">0</span> / <span id="criterrorprogressleveltooltip">10</span></span>               
+                            </div>                   
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -185,5 +207,6 @@
         <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritGuess()">Increase CritGuess</button>
         <button class="devtool" style="display: none;" type="button" onclick="test()">test()</button>
         <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritSolve()">Increase CritSolve</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritError()">Increase CritError</button>
     </body>
 </html>

@@ -6,3 +6,4 @@ skills
 1 - locking
 2 - critguess
 3 - critsolve
+4 - criterror
