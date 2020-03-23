@@ -83,11 +83,11 @@
                 <div class="paddingright paddingleft">         
                     <button class="floatright tooltip" id="accuracybutton" type="button" onclick="upgradeAccuracy(0)">
                         <div>Enable Accuracy</div>
-                        <span class="tooltiptext"><div>Cost: 50 Errors</div>Accuracy is a chance to generate a point of accuracy, on per-element basis. A point of accuracy reduces the range of numbers a guess can produce by 1. E.g. range of 0-4, solution of 3, a successful point of accuracy will reduce the range to 0-3. Chance to generate a point halves each time a point is generated, but is reset on a new solution. Hover over guess values to see if you've accured any accuracy points for it.</span>
+                        <span class="tooltiptext"><div>Cost: 50 Errors</div>Accuracy is a chance to generate a point of accuracy, on per-element basis. A point of accuracy reduces the range of numbers a guess can produce by 1. E.g. range of 0-4, solution of 3, a successful point of accuracy will reduce the range to 0-3. Resets on a new solution. Hover over guess values to see if you've accured any accuracy points for it. Can exceed 100%, giving garanteed accuracy points + a chance a to generate more.</span>
                     </button>
                     <button class="floatright tooltip" id="accuracycorrectbutton" type="button" onclick="upgradeAccuracy(1)">
                         <div>Accuracy: Correct Guess Bonus</div>
-                        <span class="tooltiptext"><div>Cost: 1000 Errors</div>Doubles the chance to generate a point of accuracy when a correct guess is made.</span>
+                        <span class="tooltiptext"><div>Cost: 1000 Errors</div>Accuracy always increases when it's a correct guess.</span>
                     </button>
                     <br>
                     <br>
@@ -95,23 +95,29 @@
                         <div>Enable Locking</div>
                         <span class="tooltiptext"><div>Cost: 500 Errors</div>Locking is a chance to 'lock' a correct guess in-place, preventing it from changing until a solution is reached. Locks are coloured green & reset when a new solution is generated.</span>
                     </button>
+                    <button class="floatright tooltip" id="lockingprobebutton" type="button" onclick="upgradeLocking(1)">
+                        <div>Enable Probing Guess</div>
+                        <span class="tooltiptext"><div>Cost: 5000 Errors</div>If a guess lands within 1 integer of the solution it will, on the next guess, return the solution. A probing guess turns yellow.</span>
+                    </button>
                     <br>
                     <br>
                     <button class="floatright tooltip" id="critguessbutton" type="button" onclick="upgradeCritGuess(0)">
                         <div>Enable Critical Guess</div>
                         <span class="tooltiptext"><div>Cost: 5000 Errors</div>A Critical Guess turns an incorrect guess into a correct one.</span>
                     </button>
-                    <br>
-                    <br>
                     <button class="floatright tooltip" id="critsolvebutton" type="button" onclick="upgradeCritSolve(0)">
                         <div>Enable Critical Solves</div>
                         <span class="tooltiptext"><div>Cost: 5000 Errors</div>A Critical Solve doubles the value of a solve (including progress towards nodes).</span>
                     </button>
-                    <br>
-                    <br>
                     <button class="floatright tooltip" id="criterrorbutton" type="button" onclick="upgradeCritError(0)">
                         <div>Enable Critical Errors</div>
                         <span class="tooltiptext"><div>Cost: 5000 Errors</div>A Critical Error doubles the number of errors generated when failing a guess.</span>
+                    </button>
+                    <br>
+                    <br>
+                    <button class="floatright tooltip" id="tickspeedbutton" type="button" onclick="upgradeTickSpeed(0)">
+                        <div>Increase Tick Speed</div>
+                        <span class="tooltiptext"><div>Cost: 5000 Errors</div>An improved tick speed results in a shorter delay between guesses.</span>
                     </button>
                 </div>
             </div>
@@ -189,6 +195,18 @@
                             </div>                   
                         </div>
                     </div>
+                    <div class="paddingbottom">
+                        <span>Tick Speed: <span id="tickspeed">1000</span> ms</span>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('tickspeed', false)">-</button>
+                        <span class="floatright paddingleftright"><span id="tickspeednodes">0</span></span>
+                        <button class="floatright smallbutton" type="button" onclick="assignNode('tickspeed', true)">+</button>
+                        <div class="progressbar">                      
+                            <div id="tickspeedprogress" class="progress"></div>
+                            <div class="tooltip">  
+                                <span class="tooltiptextprogress"><span id="tickspeedprogressxptooltip">0</span> / <span id="tickspeedprogressleveltooltip">10</span></span>               
+                            </div>                   
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -208,5 +226,6 @@
         <button class="devtool" style="display: none;" type="button" onclick="test()">test()</button>
         <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritSolve()">Increase CritSolve</button>
         <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritError()">Increase CritError</button>
+        <button class="devtool" style="display: none;" type="button" onclick="devIncreaseTickSpeed()">Increase TickSpeed Bonus</button>
     </body>
 </html>

@@ -1,5 +1,7 @@
 flags
-0 - accuracy bonus on correct guess
+0 - upgrade: accuracy bonus on correct guess
+1 - upgrade: locking probing guess
+2 - 
 
 skills
 0 - accuracy
@@ -7,3 +9,4 @@ skills
 2 - critguess
 3 - critsolve
 4 - criterror
+5 - tickspeed
