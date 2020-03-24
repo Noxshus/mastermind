@@ -1,7 +1,7 @@
 flags
 0 - upgrade: accuracy bonus on correct guess
 1 - upgrade: locking probing guess
-2 - 
+2 - limit break
 
 skills
 0 - accuracy

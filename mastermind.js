@@ -74,6 +74,10 @@ window.onload = function() {
     if (data.flag[1] == 1) { 
         document.getElementById("lockingprobebutton").remove();
     }
+
+    if (data.flag[2] == 1) {
+        document.getElementById("limitbreakbutton").remove();
+    }
 }
 
 function saveGame() 
@@ -273,6 +277,12 @@ function error() //compilation of logic when a guess failed to solve
     }
     data.errorGuess = data.errorGuess + global.solutionMultipler;
     document.getElementById("errorguess").innerHTML = data.errorGuess;
+}
+
+function manualRestart() //used by the manual restart button, simply sets the timer to zero and runs a guess(), which will handle it
+{
+    global.gameTimer = 0;
+    guess();
 }
 
 // ----------------------------------------- #upgrades ----------------------------------------------------------------------------------------------
@@ -655,11 +665,35 @@ function assignNode(skill, add)
     document.getElementById(skill + "nodes").innerHTML = data.nodeAssignments[_skill];
 }
 
+function purchaseNode(currency) {
+    switch (currency) {
+        case "solutions":
+            if (data.solutionSolved >= 1000) {
+                data.solutionSolved = data.solutionSolved - 1000;
+                data.totalNodes++;
+            }
+            document.getElementById("totalnodes").innerHTML = data.totalNodes;
+            document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
+            break;
+        case "errors":
+            if (data.errorGuess >= 10000) {
+                data.errorGuess = data.errorGuess - 10000;
+                data.totalNodes++;
+            }
+            document.getElementById("totalnodes").innerHTML = data.totalNodes;
+            document.getElementById("errorguess").innerHTML = data.solutionSolved;
+            break;
+    }
+}
+
 // Functions related to upgrading #solution #length #floor #ceiling ---------------------------------------------------------------------------
 
 function checkForUpgradeSolution() //returns depend on whether or not length & ceiling if they're both under <10
 {
-    if (global.solutionCeiling < 9 && global.solution.length < 10) { //upgrade logic
+    if (global.solutionCeiling < 99 && global.solution.length < 20 && flag[2] == 1) { //limit break upgrade
+        return true;
+    }
+    else if (global.solutionCeiling < 9 && global.solution.length < 10 && flag[2] == 0) { //upgrade logic
         return true;
     }
     return false;
@@ -695,6 +729,17 @@ function upgradeSolutionCeiling()
     global.solutionCeiling++;
 }
 
+//Functions related to #limit break
+
+function upgradeLimitBreak() {
+    if (data.solutionSolved >= 1000) {
+        data.solutionSolved = data.solutionSolved - 1000;
+        flag[2] = 1;
+        document.getElementById("limitbreakbutton").remove();
+    }
+    document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
+}
+
 //Functions related to #statistics---------------------------------------------------------------------------------------------------------------------
 
 function startGameTimer(reason) 
@@ -709,13 +754,14 @@ function startGameTimer(reason)
         case "restart":
             clearInterval(gameTimerLoop);
             global.gameTimer = 60;
+            global.currentLoopTime = 0;
             document.getElementById("gametimer").innerHTML = global.gameTimer;
             gameTimerLoop = setInterval(updateGameTimer, 1000);
             break;
     }
 }
 
-function updateGameTimer () 
+function updateGameTimer() 
 {
     global.gameTimer--;
     global.currentLoopTime++;

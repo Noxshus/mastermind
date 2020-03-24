@@ -159,6 +159,10 @@ body { /*undoing defaults*/
         visibility: visible;
     }
 
+.hide {
+    display: none;
+}
+
 #nodeprogressbar { /*the black bar, which will be filled by #nodeprogress*/
     height: 20px;
     background-color: #292b2c;

@@ -65,6 +65,12 @@
                         <div>Time Left: <span id="gametimer">60</span> secs</div>
                         <span class="tooltiptext">When the timer expires, solution complexity will reset (but you'll keep all upgrades and accumulated resources). The timer restarts whenever we reach a solution.</span>
                     </div>
+                    <br>
+                    <br>
+                    <button class="tooltip" id="restartbutton" type="button" onclick="manualRestart()">
+                        <div>Restart</div>
+                        <span class="tooltiptext">Return to the lowest complexity. Useful for generating solutions at lower levels of complexity, if we cannot reach higher ones yet.</span>
+                    </button>
                 </div>
             </div>
             <div class="rightcolumn">
@@ -132,100 +138,124 @@
                 </button>
                 <br>
                 <button id="clearstatsbutton" type="button" onclick="clearStatistics('clear')">Clear Statistics</button>
+                <br>
+                <button class="tooltip" id="limitbreakbutton" type="button" onclick="upgradeLimitBreak()">
+                    <div>LIMIT BREAK</div>
+                    <span class="tooltiptext"><div>Cost: 1000 Solutions</div>Increase the maximum solution ceiling to 99 and the length to 20. Enables the win condition.</span>
+                </button>
+                <br>
+                <button class="tooltip" id="nodepurchasesolutionbutton" type="button" onclick="purchaseNode('solutions')">
+                    <div>Build Node (Solutions)</div>
+                    <span class="tooltiptext"><div>Cost: 1000 Solutions</div>Brute Force a node into existance, using knowledge gained from past solutions.</span>
+                </button>
+                <button class="tooltip" id="nodepurchaseerrorbutton" type="button" onclick="purchaseNode('errors')">
+                    <div>Build Node (Errors)</div>
+                    <span class="tooltiptext"><div>Cost: 10000 Errors</div>Mistakes are the best teachers.</span>
+                </button>
             </div> 
             <div class="rightcolumn">
                 <div class="paddingright paddingleft">
                     <div class="paddingbottom">
                         <span>Accuracy Chance: <span id="accuracychance">0%</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', false)">-</button>
-                        <span class="floatright paddingleftright"><span id="accuracynodes">0</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', true)">+</button>        
-                        <div class="progressbar">                           
-                            <div id="accuracyprogress" class="progress"></div>
-                            <div class="tooltip">  
-                                <span class="tooltiptextprogress"><span id="accuracyprogressxptooltip">0</span> / <span id="accuracyprogressleveltooltip">10</span></span>               
+                        <span class="accuracynodeblock">
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', false)">-</button>
+                            <span class="floatright paddingleftright"><span id="accuracynodes">0</span></span>
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', true)">+</button>        
+                            <div class="progressbar">                           
+                                <div id="accuracyprogress" class="progress"></div>
+                                <div class="tooltip">  
+                                    <span class="tooltiptextprogress"><span id="accuracyprogressxptooltip">0</span> / <span id="accuracyprogressleveltooltip">10</span></span>               
+                                </div>
                             </div>
-                        </div>
+                        </span>
                     </div>
                     <div class="paddingbottom">
                         <span>Locking Chance: <span id="lockingchance">0%</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('locking', false)">-</button>
-                        <span class="floatright paddingleftright"><span id="lockingnodes">0</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('locking', true)">+</button>
-                        <div class="progressbar">                      
-                            <div id="lockingprogress" class="progress"></div>          
-                            <div class="tooltip">  
-                                <span class="tooltiptextprogress"><span id="lockingprogressxptooltip">0</span> / <span id="lockingprogressleveltooltip">10</span></span>               
-                            </div>          
-                        </div>
+                        <span class="lockingnodeblock">
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('locking', false)">-</button>
+                            <span class="floatright paddingleftright"><span id="lockingnodes">0</span></span>
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('locking', true)">+</button>
+                            <div class="progressbar">                      
+                                <div id="lockingprogress" class="progress"></div>          
+                                <div class="tooltip">  
+                                    <span class="tooltiptextprogress"><span id="lockingprogressxptooltip">0</span> / <span id="lockingprogressleveltooltip">10</span></span>               
+                                </div>          
+                            </div>
+                        </span>
                     </div>
                     <div class="paddingbottom">
                         <span>Critical Guess Chance: <span id="critguesschance">0%</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('critguess', false)">-</button>
-                        <span class="floatright paddingleftright"><span id="critguessnodes">0</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('critguess', true)">+</button>
-                        <div class="progressbar">                      
-                            <div id="critguessprogress" class="progress"></div>
-                            <div class="tooltip">  
-                                <span class="tooltiptextprogress"><span id="critguessprogressxptooltip">0</span> / <span id="critguessprogressleveltooltip">10</span></span>               
-                            </div>                   
-                        </div>
+                        <span class="critguessblock">
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('critguess', false)">-</button>
+                            <span class="floatright paddingleftright"><span id="critguessnodes">0</span></span>
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('critguess', true)">+</button>
+                            <div class="progressbar">                      
+                                <div id="critguessprogress" class="progress"></div>
+                                <div class="tooltip">  
+                                    <span class="tooltiptextprogress"><span id="critguessprogressxptooltip">0</span> / <span id="critguessprogressleveltooltip">10</span></span>               
+                                </div>                   
+                            </div>
+                        </span>
                     </div>
                     <div class="paddingbottom">
                         <span>Critical Solve Chance: <span id="critsolvechance">0%</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('critsolve', false)">-</button>
-                        <span class="floatright paddingleftright"><span id="critsolvenodes">0</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('critsolve', true)">+</button>
-                        <div class="progressbar">                      
-                            <div id="critsolveprogress" class="progress"></div>
-                            <div class="tooltip">  
-                                <span class="tooltiptextprogress"><span id="critsolveprogressxptooltip">0</span> / <span id="critsolveprogressleveltooltip">10</span></span>               
-                            </div>                   
-                        </div>
+                        <span class="critsolveblock">
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('critsolve', false)">-</button>
+                            <span class="floatright paddingleftright"><span id="critsolvenodes">0</span></span>
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('critsolve', true)">+</button>
+                            <div class="progressbar">                      
+                                <div id="critsolveprogress" class="progress"></div>
+                                <div class="tooltip">  
+                                    <span class="tooltiptextprogress"><span id="critsolveprogressxptooltip">0</span> / <span id="critsolveprogressleveltooltip">10</span></span>               
+                                </div>                   
+                            </div>
+                        </span>
                     </div>
                     <div class="paddingbottom">
                         <span>Critical Error Chance: <span id="criterrorchance">0%</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('criterror', false)">-</button>
-                        <span class="floatright paddingleftright"><span id="criterrornodes">0</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('criterror', true)">+</button>
-                        <div class="progressbar">                      
-                            <div id="criterrorprogress" class="progress"></div>
-                            <div class="tooltip">  
-                                <span class="tooltiptextprogress"><span id="criterrorprogressxptooltip">0</span> / <span id="criterrorprogressleveltooltip">10</span></span>               
-                            </div>                   
-                        </div>
+                        <span class="criterrorblock">
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('criterror', false)">-</button>
+                            <span class="floatright paddingleftright"><span id="criterrornodes">0</span></span>
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('criterror', true)">+</button>
+                            <div class="progressbar">                      
+                                <div id="criterrorprogress" class="progress"></div>
+                                <div class="tooltip">  
+                                    <span class="tooltiptextprogress"><span id="criterrorprogressxptooltip">0</span> / <span id="criterrorprogressleveltooltip">10</span></span>               
+                                </div>                   
+                            </div>
+                        </span>
                     </div>
                     <div class="paddingbottom">
                         <span>Tick Speed: <span id="tickspeed">1000</span> ms</span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('tickspeed', false)">-</button>
-                        <span class="floatright paddingleftright"><span id="tickspeednodes">0</span></span>
-                        <button class="floatright smallbutton" type="button" onclick="assignNode('tickspeed', true)">+</button>
-                        <div class="progressbar">                      
-                            <div id="tickspeedprogress" class="progress"></div>
-                            <div class="tooltip">  
-                                <span class="tooltiptextprogress"><span id="tickspeedprogressxptooltip">0</span> / <span id="tickspeedprogressleveltooltip">10</span></span>               
-                            </div>                   
-                        </div>
+                        <span class="tickspeedblock">
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('tickspeed', false)">-</button>
+                            <span class="floatright paddingleftright"><span id="tickspeednodes">0</span></span>
+                            <button class="floatright smallbutton" type="button" onclick="assignNode('tickspeed', true)">+</button>
+                            <div class="progressbar">                      
+                                <div id="tickspeedprogress" class="progress"></div>
+                                <div class="tooltip">  
+                                    <span class="tooltiptextprogress"><span id="tickspeedprogressxptooltip">0</span> / <span id="tickspeedprogressleveltooltip">10</span></span>               
+                                </div>                   
+                            </div>
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
             
-        <button class="devtool" style="display: none;" type="button" onclick="devAddSolution()">DEV: SOLUTIONS</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devAddNodeXP()">DEV: NODE XP</button>
-        <button class="devtool" id="solutionlengthbutton" style="display: none;" type="button" onclick="upgradeSolutionLength()">Upgrade Solution Length</button>
-        <button class="devtool" id="solutionceilingbutton" style="display: none;" type="button" onclick="upgradeSolutionCeiling()">Upgrade Solution Ceiling</button>
-        <button class="devtool" style="display: none;" type="button" onclick="guess()">DEV: guess()</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devAddNodes()">DEV: ADD NODES</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devAddAcc()">DEV: ADD ACCURACY</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devUpgradeLocking()">Upgrade Locking</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devAddErrors()">Add Errors</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devReduceTime()">Reduce Time</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devDeleteSave()">Delete Save</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritGuess()">Increase CritGuess</button>
-        <button class="devtool" style="display: none;" type="button" onclick="test()">test()</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritSolve()">Increase CritSolve</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devIncreaseCritError()">Increase CritError</button>
-        <button class="devtool" style="display: none;" type="button" onclick="devIncreaseTickSpeed()">Increase TickSpeed Bonus</button>
+        <button class="devtool hide" type="button" onclick="devAddSolution()">DEV: SOLUTIONS</button>
+        <button class="devtool hide" type="button" onclick="devAddNodeXP()">DEV: NODE XP</button>
+        <button class="devtool hide" type="button" onclick="guess()">DEV: guess()</button>
+        <button class="devtool hide" type="button" onclick="devAddNodes()">DEV: ADD NODES</button>
+        <button class="devtool hide" type="button" onclick="devAddAcc()">DEV: ADD ACCURACY</button>
+        <button class="devtool hide" type="button" onclick="devUpgradeLocking()">Upgrade Locking</button>
+        <button class="devtool hide" type="button" onclick="devAddErrors()">Add Errors</button>
+        <button class="devtool hide" type="button" onclick="devReduceTime()">Reduce Time</button>
+        <button class="devtool hide" type="button" onclick="devDeleteSave()">Delete Save</button>
+        <button class="devtool hide" type="button" onclick="devIncreaseCritGuess()">Increase CritGuess</button>
+        <button class="devtool hide" type="button" onclick="test()">test()</button>
+        <button class="devtool hide" type="button" onclick="devIncreaseCritSolve()">Increase CritSolve</button>
+        <button class="devtool hide" type="button" onclick="devIncreaseCritError()">Increase CritError</button>
+        <button class="devtool hide" type="button" onclick="devIncreaseTickSpeed()">Increase TickSpeed Bonus</button>
     </body>
 </html>
