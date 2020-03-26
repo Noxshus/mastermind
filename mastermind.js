@@ -28,7 +28,8 @@ var data = {
     skill: Array(6).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
     skillXP: Array(6).fill(0), //0: accuracy, 1: locking
     skillXPToLevel: Array(6).fill(10),
-    flag: Array(5).fill(0),
+    flag: Array(11).fill(0),
+    totalTime: 0, //simply keeps track of total number of seconds that have elapsed, should take forever to fill up (I hope)
 };
 
 window.onload = function() {
@@ -44,6 +45,7 @@ window.onload = function() {
     document.getElementById("guessbuttondisable").disabled = true; //sometimes, on refresh, disabled button isn't disabled by default for some reason
 
     loadGame(); //check if we've got save game data to load - otherwise the data object will use default values
+
     document.getElementById("errorguess").innerHTML = data.errorGuess;
     document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
     const _nodePercent = ((data.nodeXP / data.nodeXPToLevel) * 100).toFixed(2);
@@ -55,7 +57,7 @@ window.onload = function() {
     for (let i = 0; i < data.nodeAssignments.length; i++) { 
         const _skill = returnSkillNameOrNumber(i);
         if (i == 5) { //special handling for tickspeed
-            document.getElementById("tickspeed").innerHTML = data.tickSpeed;
+            document.getElementById("tickspeed").innerHTML = data.tickSpeed.toFixed(2);
         }
         else {
             document.getElementById(_skill + "chance").innerHTML = data.skill[i] + "%";
@@ -77,6 +79,14 @@ window.onload = function() {
 
     if (data.flag[2] == 1) {
         document.getElementById("limitbreakbutton").remove();
+    }
+
+    for (let i = 0; i <= 5; i++) {
+        updateNodeElements(i);
+    }
+
+    if (data.flag[9] == 1) {
+        document.getElementById("nodeblock").style.visibility = "visible";
     }
 }
 
@@ -102,7 +112,12 @@ let saveLoop = setInterval(saveGame, 30000); //saves every 30 seconds
 let updateLoop = setInterval(update, 10000); //seperate to everything else, we run checks to see if stuff needs to be unlocked. Seperated from the guessLoop so that we don't spam checks needlessly
 
 function update() {
+    data.totalTime = data.totalTime + 10; //10 seconds have passed since the last time this ticked - used for some checks
 
+    if (data.flag[9] == 0 && data.solutionSolved > 1) { //reveal the node elements
+        data.flag[9] = 1;
+        document.getElementById("nodeblock").style.visibility = "visible";
+    }
 }
 
 function guessLoop() { //begin the guess loop
@@ -325,7 +340,8 @@ function upgradeAccuracy(type)
             if (data.errorGuess >= 50) {
                 data.errorGuess = data.errorGuess - 50;
                 data.skill[0]++;
-                document.getElementById("accuracybutton").remove();
+                data.flag[3] = 1;
+                updateNodeElements(0);
                 document.getElementById("accuracychance").innerHTML = data.skill[0] + "%";
             }
             break;
@@ -392,7 +408,8 @@ function upgradeLocking(type)
             if (data.errorGuess >= 500) {
                 data.errorGuess = data.errorGuess - 500
                 data.skill[1]++;
-                document.getElementById("lockingbutton").remove();
+                data.flag[4] = 1;
+                updateNodeElements(1);
                 document.getElementById("lockingchance").innerHTML = data.skill[1] + "%";
             }
             break;
@@ -431,7 +448,8 @@ function upgradeCritGuess(type)
             if (data.errorGuess >= 5000) { 
                 data.errorGuess = data.errorGuess - 5000;
                 data.skill[2]++;
-                document.getElementById("critguessbutton").remove();
+                data.flag[5] = 1;
+                updateNodeElements(2);
                 document.getElementById("critguesschance").innerHTML = data.skill[2] + "%";
             }
             break;
@@ -458,7 +476,8 @@ function upgradeCritSolve(type)
             if (data.errorGuess >= 5000) { 
                 data.errorGuess = data.errorGuess - 5000;
                 data.skill[3]++;
-                document.getElementById("critsolvebutton").remove();
+                data.flag[6] = 1;
+                updateNodeElements(3);
                 document.getElementById("critsolvechance").innerHTML = data.skill[3] + "%";
             }
             break;
@@ -486,7 +505,8 @@ function upgradeCritError(type)
             if (data.errorGuess >= 5000) { 
                 data.errorGuess = data.errorGuess - 5000;
                 data.skill[4]++;
-                document.getElementById("criterrorbutton").remove();
+                data.flag[7] = 1;
+                updateNodeElements(4);
                 document.getElementById("criterrorchance").innerHTML = data.skill[4] + "%";
             }
             break;
@@ -515,9 +535,10 @@ function upgradeTickSpeed(type)
                 data.errorGuess = data.errorGuess - 5000;
                 data.skill[5] = data.tickSpeed - (growthCurve("sublinear", data.tickSpeed));
                 data.tickSpeed = data.skill[5];
-                document.getElementById("tickspeed").innerHTML = data.tickSpeed + "ms";
+                data.flag[8] = 1;
+                document.getElementById("tickspeed").innerHTML = data.tickSpeed.toFixed(2);
                 document.getElementById("tickspeedbutton").remove();
-                document.getElementById("tickspeedchance").innerHTML = data.skill[5] + "%";
+                document.getElementById("tickspeeddisplay").style.display = "inline";
                 restartGuessLoopIfRunning();
             }
             break;
@@ -579,6 +600,12 @@ function gainAssignedNodeProgress() //if a node is assigned to a skill, generate
 
 function levelUpNode()
 {
+    if (data.flag[10] == 0) {
+        data.flag[10] = 1; //first node has been acquired, use to display node assignment elements
+        for (i == 0; i <= 5; i++) {
+            updateNodeElements(i);
+        }
+    }
     data.totalNodes++;
     data.nodeXP = data.nodeXP - data.nodeXPToLevel; //so we can keep any overflow to the next level
     data.nodeXPToLevel = growthCurve("superlinear", data.nodeXPToLevel);
@@ -665,7 +692,8 @@ function assignNode(skill, add)
     document.getElementById(skill + "nodes").innerHTML = data.nodeAssignments[_skill];
 }
 
-function purchaseNode(currency) {
+function purchaseNode(currency) 
+{
     switch (currency) {
         case "solutions":
             if (data.solutionSolved >= 1000) {
@@ -686,14 +714,87 @@ function purchaseNode(currency) {
     }
 }
 
+function updateNodeElements(skill) //run both at game load and when an upgrade is purchased, just in-case we need to reveal certain elements
+{
+    switch (skill)
+    {
+        case 0:
+            if (data.flag[3] == 1) {
+                if (document.getElementById("accuracybutton") != null) {
+                    document.getElementById("accuracybutton").remove();
+                }
+                document.getElementById("accuracydisplay").style.display = "inline";
+                if (data.flag[10] == 1) {
+                    document.getElementById("accuracynodeblock").style.display = "inline";
+                }
+            }
+            break;
+        case 1:
+            if (data.flag[4] == 1) {
+                if (document.getElementById("lockingbutton") != null) {
+                    document.getElementById("lockingbutton").remove();
+                }
+                document.getElementById("lockingdisplay").style.display = "inline";
+                if (data.flag[10] == 1) {
+                    document.getElementById("lockingnodeblock").style.display = "inline";
+                }
+            }
+            break;
+        case 2:
+            if (data.flag[5] == 1) {
+                if (document.getElementById("critguessbutton") != null) {
+                    document.getElementById("critguessbutton").remove();
+                }
+                document.getElementById("critguessdisplay").style.display = "inline";
+                if (data.flag[10] == 1) {
+                    document.getElementById("critguessnodeblock").style.display = "inline";
+                }
+            }
+            break;
+        case 3:
+            if (data.flag[6] == 1) {
+                if (document.getElementById("critsolvebutton") != null) {
+                    document.getElementById("critsolvebutton").remove();
+                }
+                document.getElementById("critsolvedisplay").style.display = "inline";
+                if (data.flag[10] == 1) {
+                    document.getElementById("critsolvenodeblock").style.display = "inline";
+                }
+            }
+            break;
+        case 4:
+            if (data.flag[7] == 1) {
+                if (document.getElementById("criterrorbutton") != null) {
+                    document.getElementById("criterrorbutton").remove();
+                }
+                document.getElementById("criterrordisplay").style.display = "inline";
+                if (data.flag[10] == 1) {
+                    document.getElementById("criterrornodeblock").style.display = "inline";
+                }
+            }
+            break;
+        case 5:
+            if (data.flag[8] == 1) {
+                if (document.getElementById("tickspeedbutton") != null) {
+                    document.getElementById("tickspeedbutton").remove();
+                }
+                document.getElementById("tickspeeddisplay").style.display = "inline";
+                if (data.flag[10] == 1) {
+                    document.getElementById("tickspeednodeblock").style.display = "block";
+                }
+            }
+            break;
+    }
+}
+
 // Functions related to upgrading #solution #length #floor #ceiling ---------------------------------------------------------------------------
 
 function checkForUpgradeSolution() //returns depend on whether or not length & ceiling if they're both under <10
 {
-    if (global.solutionCeiling < 99 && global.solution.length < 20 && flag[2] == 1) { //limit break upgrade
+    if (global.solutionCeiling < 99 && global.solution.length < 20 && data.flag[2] == 1) { //limit break upgrade
         return true;
     }
-    else if (global.solutionCeiling < 9 && global.solution.length < 10 && flag[2] == 0) { //upgrade logic
+    else if (global.solutionCeiling < 9 && global.solution.length < 10 && data.flag[2] == 0) { //upgrade logic
         return true;
     }
     return false;
@@ -734,7 +835,7 @@ function upgradeSolutionCeiling()
 function upgradeLimitBreak() {
     if (data.solutionSolved >= 1000) {
         data.solutionSolved = data.solutionSolved - 1000;
-        flag[2] = 1;
+        data.flag[2] = 1;
         document.getElementById("limitbreakbutton").remove();
     }
     document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
@@ -942,8 +1043,8 @@ function enableDev()
 
 function devAddSolution()
 {
-    data.solutionSolved = data.solutionSolved + 10;
-    document.getElementById("solutionsolved").innerHTML = data.errorGuess;
+    data.solutionSolved = data.solutionSolved + 100;
+    document.getElementById("solvedsolution").innerHTML = data.solutionSolved;
 }
 
 function devAddNodeXP()

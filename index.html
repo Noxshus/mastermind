@@ -36,15 +36,17 @@
                     <span id="guess2">0</span></div>
             </div>
             <div class="rightcolumn aligncenter tooltip">
-                <div>NODE CONSTRUCTION</div>
-                <div class="paddingright paddingleft">
-                    <div id="nodeprogressbar">                      
-                        <div id="nodeprogress"></div>
-                        <div id="nodeprogresstext">0%</div>                       
+                <div id="nodeblock" class="hidevisible">
+                    <div>NODE CONSTRUCTION</div>
+                    <div class="paddingright paddingleft">
+                        <div id="nodeprogressbar">                      
+                            <div id="nodeprogress"></div>
+                            <div id="nodeprogresstext">0%</div>                       
+                        </div>
+                        <div><span id="nodexp">0</span> / <span id="nodexptolevel">0</span></div>
+                        <div>NODES AVAILABLE: <span id="totalnodes">0</span></div>
+                        <span class="tooltiptext">We gain progress towards a new node when reaching a correct solution. Nodes can be assigned to various attributes below, distributing that progress to them too & improving them further.</span>
                     </div>
-                    <div><span id="nodexp">0</span> / <span id="nodexptolevel">0</span></div>
-                    <div>NODES AVAILABLE: <span id="totalnodes">0</span></div>
-                    <span class="tooltiptext">We gain progress towards a new node when reaching a correct solution. Nodes can be assigned to various attributes below, distributing that progress to them too & improving them further.</span>
                 </div>
             </div>
         </div>
@@ -92,7 +94,7 @@
                         <span class="tooltiptext"><div>Cost: 50 Errors</div>Accuracy is a chance to generate a point of accuracy, on per-element basis. A point of accuracy reduces the range of numbers a guess can produce by 1. E.g. range of 0-4, solution of 3, a successful point of accuracy will reduce the range to 0-3. Resets on a new solution. Hover over guess values to see if you've accured any accuracy points for it. Can exceed 100%, giving garanteed accuracy points + a chance a to generate more.</span>
                     </button>
                     <button class="floatright tooltip" id="accuracycorrectbutton" type="button" onclick="upgradeAccuracy(1)">
-                        <div>Accuracy: Correct Guess Bonus</div>
+                        <div>Correct Guess Bonus</div>
                         <span class="tooltiptext"><div>Cost: 1000 Errors</div>Accuracy always increases when it's a correct guess.</span>
                     </button>
                     <br>
@@ -138,12 +140,12 @@
                 </button>
                 <br>
                 <button id="clearstatsbutton" type="button" onclick="clearStatistics('clear')">Clear Statistics</button>
-                <br>
-                <button class="tooltip" id="limitbreakbutton" type="button" onclick="upgradeLimitBreak()">
-                    <div>LIMIT BREAK</div>
-                    <span class="tooltiptext"><div>Cost: 1000 Solutions</div>Increase the maximum solution ceiling to 99 and the length to 20. Enables the win condition.</span>
-                </button>
-                <br>
+                <div>
+                    <button class="tooltip" id="limitbreakbutton" type="button" onclick="upgradeLimitBreak()">
+                        <div>LIMIT BREAK</div>
+                        <span class="tooltiptext"><div>Cost: 1000 Solutions</div>Increase the maximum solution ceiling to 99 and the length to 20. Enables the win condition.</span>
+                    </button>
+                </div>
                 <button class="tooltip" id="nodepurchasesolutionbutton" type="button" onclick="purchaseNode('solutions')">
                     <div>Build Node (Solutions)</div>
                     <span class="tooltiptext"><div>Cost: 1000 Solutions</div>Brute Force a node into existance, using knowledge gained from past solutions.</span>
@@ -156,8 +158,8 @@
             <div class="rightcolumn">
                 <div class="paddingright paddingleft">
                     <div class="paddingbottom">
-                        <span>Accuracy Chance: <span id="accuracychance">0%</span></span>
-                        <span class="accuracynodeblock">
+                        <span class="hide" id="accuracydisplay">Accuracy Chance: <span id="accuracychance">0%</span></span>
+                        <span class="hide" id="accuracynodeblock">
                             <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', false)">-</button>
                             <span class="floatright paddingleftright"><span id="accuracynodes">0</span></span>
                             <button class="floatright smallbutton" type="button" onclick="assignNode('accuracy', true)">+</button>        
@@ -170,8 +172,8 @@
                         </span>
                     </div>
                     <div class="paddingbottom">
-                        <span>Locking Chance: <span id="lockingchance">0%</span></span>
-                        <span class="lockingnodeblock">
+                        <span class="hide" id="lockingdisplay">Locking Chance: <span id="lockingchance">0%</span></span>
+                        <span class="hide" id="lockingnodeblock">
                             <button class="floatright smallbutton" type="button" onclick="assignNode('locking', false)">-</button>
                             <span class="floatright paddingleftright"><span id="lockingnodes">0</span></span>
                             <button class="floatright smallbutton" type="button" onclick="assignNode('locking', true)">+</button>
@@ -184,8 +186,8 @@
                         </span>
                     </div>
                     <div class="paddingbottom">
-                        <span>Critical Guess Chance: <span id="critguesschance">0%</span></span>
-                        <span class="critguessblock">
+                        <span class="hide" id="critguessdisplay">Critical Guess Chance: <span id="critguesschance">0%</span></span>
+                        <span class="hide" id="critguessnodeblock">
                             <button class="floatright smallbutton" type="button" onclick="assignNode('critguess', false)">-</button>
                             <span class="floatright paddingleftright"><span id="critguessnodes">0</span></span>
                             <button class="floatright smallbutton" type="button" onclick="assignNode('critguess', true)">+</button>
@@ -198,8 +200,8 @@
                         </span>
                     </div>
                     <div class="paddingbottom">
-                        <span>Critical Solve Chance: <span id="critsolvechance">0%</span></span>
-                        <span class="critsolveblock">
+                        <span class="hide" id="critsolvedisplay">Critical Solve Chance: <span id="critsolvechance">0%</span></span>
+                        <span class="hide" id="critsolvenodeblock">
                             <button class="floatright smallbutton" type="button" onclick="assignNode('critsolve', false)">-</button>
                             <span class="floatright paddingleftright"><span id="critsolvenodes">0</span></span>
                             <button class="floatright smallbutton" type="button" onclick="assignNode('critsolve', true)">+</button>
@@ -212,8 +214,8 @@
                         </span>
                     </div>
                     <div class="paddingbottom">
-                        <span>Critical Error Chance: <span id="criterrorchance">0%</span></span>
-                        <span class="criterrorblock">
+                        <span class="hide" id="criterrordisplay">Critical Error Chance: <span id="criterrorchance">0%</span></span>
+                        <span class="hide" id="criterrornodeblock">
                             <button class="floatright smallbutton" type="button" onclick="assignNode('criterror', false)">-</button>
                             <span class="floatright paddingleftright"><span id="criterrornodes">0</span></span>
                             <button class="floatright smallbutton" type="button" onclick="assignNode('criterror', true)">+</button>
@@ -226,8 +228,8 @@
                         </span>
                     </div>
                     <div class="paddingbottom">
-                        <span>Tick Speed: <span id="tickspeed">1000</span> ms</span>
-                        <span class="tickspeedblock">
+                        <span class="hide" id="tickspeeddisplay">Tick Speed: <span id="tickspeed">1000</span> ms</span>
+                        <span class="hide" id="tickspeednodeblock">
                             <button class="floatright smallbutton" type="button" onclick="assignNode('tickspeed', false)">-</button>
                             <span class="floatright paddingleftright"><span id="tickspeednodes">0</span></span>
                             <button class="floatright smallbutton" type="button" onclick="assignNode('tickspeed', true)">+</button>

@@ -2,6 +2,14 @@ flags
 0 - upgrade: accuracy bonus on correct guess
 1 - upgrade: locking probing guess
 2 - limit break
+3 - enable accuracy
+4 - enable locking
+5 - enable crit guess
+6 - enable crit solve
+7 - enable crit error
+8 - enable tickspeed
+9 - reveal nodes block (top right)
+10 - first node acquired
 
 skills
 0 - accuracy
