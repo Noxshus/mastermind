@@ -53,12 +53,14 @@
         <hr>
         <div class="flexbox">
             <div class="leftcolumn">
-                <div class="paddingleft paddingright">
-                    <span>Error Count: <span id="errorstosolvecurrent">0</span></span>
-                    <br>
-                    <span>Previous Error Count: <span id="errorstosolveprevious">0</span></span>
-                    <br>
-                    <span>Mean Error Count: <span id="errormean">0</span></span>
+                <div class="hidevisible" id="errorstats">
+                    <div class="paddingleft paddingright">
+                        <span>Error Count: <span id="errorstosolvecurrent">0</span></span>
+                        <br>
+                        <span>Previous Error Count: <span id="errorstosolveprevious">0</span></span>
+                        <br>
+                        <span>Mean Error Count: <span id="errormean">0</span></span>
+                    </div>
                 </div>
             </div>
             <div class="centercolumn">
@@ -69,23 +71,24 @@
                     </div>
                     <br>
                     <br>
-                    <button class="tooltip" id="restartbutton" type="button" onclick="manualRestart()">
+                    <button class="tooltip hidevisible" id="restartbutton" type="button" onclick="manualRestart()">
                         <div>Restart</div>
                         <span class="tooltiptext">Return to the lowest complexity. Useful for generating solutions at lower levels of complexity, if we cannot reach higher ones yet.</span>
                     </button>
                 </div>
             </div>
             <div class="rightcolumn">
-                <div class="paddingleft paddingright">
-                    <span>Current Time: <span id="timetosolvecurrent">0</span> sec</span><span class="floatright"><span id="ticktosolvecurrent">0</span> :Tick Count</span>
-                    <br>
-                    <span>Previous Time: <span id="timetosolveprevious">0</span> sec</span><span class="floatright"><span id="ticktosolveprevious">0</span> :Previous Tick Count</span>
-                    <br>
-                    <span>Mean Time: <span id="timemean">0</span> sec</span><span class="floatright"><span id="tickmean">0</span> :Mean Tick Count</span>
+                <div class="hidevisible" id="timestats">
+                    <div class="paddingleft paddingright">
+                        <span>Current Time: <span id="timetosolvecurrent">0</span> sec</span><span class="floatright"><span id="ticktosolvecurrent">0</span> :Tick Count</span>
+                        <br>
+                        <span>Previous Time: <span id="timetosolveprevious">0</span> sec</span><span class="floatright"><span id="ticktosolveprevious">0</span> :Previous Tick Count</span>
+                        <br>
+                        <span>Mean Time: <span id="timemean">0</span> sec</span><span class="floatright"><span id="tickmean">0</span> :Mean Tick Count</span>
+                    </div>
                 </div>
             </div>
         </div>
-        <br>
         <div class="flexbox">
             <div class="leftcolumn">
                 <div class="paddingright paddingleft">         
@@ -138,8 +141,10 @@
                     <div>Disable Guess Loop</div>
                     <span class="tooltiptext">Pause the guess loop. This will also pause the timer.</span>
                 </button>
-                <br>
-                <button id="clearstatsbutton" type="button" onclick="clearStatistics('clear')">Clear Statistics</button>
+                <div>
+                    <button class="tooltip" id="statsbutton" type="button" onclick="upgradeStatistics()">Enable Statistics<span class="tooltiptext"><div>Cost: 1000 Errors</div>Display statistics regarding the amount of time taken to reach a solution. The mean value is averaged across the previous 3 time-to-solves.</span></button>
+                    <button class="tooltip hide" id="clearstatsbutton" type="button" onclick="clearStatistics('clear')">Clear Statistics<span class="tooltiptext">Clear stored previous & mean values.</span></button>
+                </div>
                 <div>
                     <button class="tooltip" id="limitbreakbutton" type="button" onclick="upgradeLimitBreak()">
                         <div>LIMIT BREAK</div>

@@ -13,7 +13,7 @@ var global = { //store for global variables, which we don't need to save between
     timeToSolve: [0, 0, 0, 0], //contains the time it took to solve
     tickToSolve: [0, 0, 0, 0], //contains the number of ticks that pass to solve
     errorsToSolve: [0, 0, 0, 0], //contains a count of the number of errors generated per solve
-    mean: [0, 0, 0], //time, tick, error
+    mean: [0, 0, 0], //time, tick, error, solutions
     solutionMultipler: 1, //increases whenever complexity increases, used to multiply solution & error gain
 }
 
@@ -28,7 +28,7 @@ var data = {
     skill: Array(6).fill(0), //array which holds skill % values; 0: accuracy, 1: locking
     skillXP: Array(6).fill(0), //0: accuracy, 1: locking
     skillXPToLevel: Array(6).fill(10),
-    flag: Array(11).fill(0),
+    flag: Array(14).fill(0),
     totalTime: 0, //simply keeps track of total number of seconds that have elapsed, should take forever to fill up (I hope)
 };
 
@@ -88,6 +88,18 @@ window.onload = function() {
     if (data.flag[9] == 1) {
         document.getElementById("nodeblock").style.visibility = "visible";
     }
+
+    if (data.flag[11] == 1) {
+        document.getElementById("restartbutton").style.visibility = "visible";;
+    }
+
+    if (data.flag[13] == 1) {
+        document.getElementById("statsbutton").remove();
+        document.getElementById("clearstatsbutton").style.display = "inline-block";
+        document.getElementById("timestats").style.visibility = "visible";
+        //document.getElementById("errorstats").style.visibility = "visible"; - serves no purpose, doesn't look nice
+    }
+        
 }
 
 function saveGame() 
@@ -118,6 +130,11 @@ function update() {
         data.flag[9] = 1;
         document.getElementById("nodeblock").style.visibility = "visible";
     }
+
+    if (data.flag[11] == 0 && data.totalTime > 60 && data.flag[12 == 1]) {
+        data.flag[11] = 1;
+        document.getElementById("restartbutton").style.visibility = "visible";
+    }
 }
 
 function guessLoop() { //begin the guess loop
@@ -125,6 +142,10 @@ function guessLoop() { //begin the guess loop
     startGameTimer("on");
     document.getElementById("guessbutton").disabled = true;
     document.getElementById("guessbuttondisable").disabled = false;
+
+    if (data.flag[12] == 0) { //guessloop run at least once
+        data.flag[12] = 1;
+    }
 }
 
 function guessLoopDisable() { //disable the loop
@@ -867,6 +888,19 @@ function updateGameTimer()
     global.gameTimer--;
     global.currentLoopTime++;
     document.getElementById("gametimer").innerHTML = global.gameTimer;
+}
+
+function upgradeStatistics() //for use when the player purchases statistics
+{
+    if (data.errorGuess >= 1000) {
+        data.errorGuess = data.errorGuess - 1000;
+        data.flag[13] = 1;
+        document.getElementById("statsbutton").remove();
+        document.getElementById("clearstatsbutton").style.display = "inline-block";
+        document.getElementById("timestats").style.visibility = "visible";
+        //document.getElementById("errorstats").style.visibility = "visible"; - don't think it looks nice, doesn't serve much purpose
+    }
+    document.getElementById("errorguess").innerHTML = data.errorGuess;
 }
 
 function updateTimeToSolve(reason) //function to update the time-related statistics
