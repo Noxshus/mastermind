@@ -15,10 +15,17 @@
                     <div>SOLUTIONS: <span id="solvedsolution">0<span></div>
                     <span class="popuptext" id="critsolvepopup">!</span>
                 </div>
-                <br>
-                <div class="popup">
-                    <div>ERRORS: <span id="errorguess">0</span></div>
-                    <span class="popuptext" id="criterrorpopup">!</span>
+                <div>
+                    <div class="popup">
+                        <div>ERRORS: <span id="errorguess">0</span></div>
+                        <span class="popuptext" id="criterrorpopup">!</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="tooltip">
+                        <div>MULTIPLIER: <span id="multiplier">1</span></div>
+                        <span class="tooltiptext">The value of a single solution & an error. Increases alongside complexity, but also resets when it is.</span>
+                    </div>
                 </div>
             </div>
             <div class="centercolumn aligncenter">
@@ -98,7 +105,7 @@
                     </button>
                     <button class="floatright tooltip" id="accuracycorrectbutton" type="button" onclick="upgradeAccuracy(1)">
                         <div>Correct Guess Bonus</div>
-                        <span class="tooltiptext"><div>Cost: 1000 Errors</div>Accuracy always increases when it's a correct guess.</span>
+                        <span class="tooltiptext"><div>Cost: 200 Errors</div>Accuracy always increases when it's a correct guess.</span>
                     </button>
                     <br>
                     <br>

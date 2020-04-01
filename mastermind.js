@@ -131,7 +131,7 @@ function update() {
         document.getElementById("nodeblock").style.visibility = "visible";
     }
 
-    if (data.flag[11] == 0 && data.totalTime > 60 && data.flag[12 == 1]) {
+    if (data.flag[11] == 0 && data.totalTime > 60 && data.flag[12] == 1) {
         data.flag[11] = 1;
         document.getElementById("restartbutton").style.visibility = "visible";
     }
@@ -267,6 +267,7 @@ function generateSolution(reason) //used to create a new solution after solving 
                 global.lock.length = 3;
                 global.solutionCeiling = 2;
                 global.solutionMultipler = 1;
+                document.getElementById("multiplier").innerHTML = global.solutionMultipler;
             }
             for (let i = 0; i < global.solution.length; i++) {
                 global.solution[i] = returnRandomInteger(global.solutionFloor, global.solutionCeiling);
@@ -287,6 +288,7 @@ function solved(reason) //compilation of logic when a solution has been solved
             if (global.solution.length > 3) { //only trigger when complexity has already been upgraded once before, to prevent the solution from getting the benefit right away
                 global.solutionMultipler = global.solutionMultipler + Math.round(growthCurve("sublinear", global.solutionMultipler));
             }
+            document.getElementById("multiplier").innerHTML = global.solutionMultipler;
             upgradeSolutionLength();
             upgradeSolutionCeiling();
         case "solved":
@@ -360,15 +362,15 @@ function upgradeAccuracy(type)
         case 0: //enables accuracy
             if (data.errorGuess >= 50) {
                 data.errorGuess = data.errorGuess - 50;
-                data.skill[0]++;
+                data.skill[0] = data.skill[0] + 10.0; //start with 10% accuracy cause it's not very useful otherwise
                 data.flag[3] = 1;
                 updateNodeElements(0);
                 document.getElementById("accuracychance").innerHTML = data.skill[0] + "%";
             }
             break;
         case 1: //one time upgrade to grant a bonus to accuracy on a correct guess
-            if (data.errorGuess >= 1000 && data.flag[0] == 0) {
-                data.errorGuess = data.errorGuess - 1000;
+            if (data.errorGuess >= 200 && data.flag[0] == 0) {
+                data.errorGuess = data.errorGuess - 200;
                 data.flag[0] = 1;
                 document.getElementById("accuracycorrectbutton").remove();
             }
@@ -623,7 +625,7 @@ function levelUpNode()
 {
     if (data.flag[10] == 0) {
         data.flag[10] = 1; //first node has been acquired, use to display node assignment elements
-        for (i == 0; i <= 5; i++) {
+        for (let i = 0; i <= 5; i++) {
             updateNodeElements(i);
         }
     }
